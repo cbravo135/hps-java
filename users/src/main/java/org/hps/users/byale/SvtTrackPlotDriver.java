@@ -55,6 +55,7 @@ import org.hps.recon.tracking.FittedRawTrackerHit;
 import org.hps.recon.tracking.TrackUtils;
 import org.hps.recon.tracking.gbl.GBLTrackData;
 import org.hps.recon.tracking.gbl.TruthResiduals;
+import org.hps.users.omoreno.SvtTrackAnalysis;
 
 /**
  * 
@@ -90,10 +91,11 @@ public class SvtTrackPlotDriver extends Driver {
     // Collections
     private String trackCollectionName = "MatchedTracks";
     private String GBLtrackCollectionName = "GBLTracks";    
-    private String stereoHitRelationsColName = "HelicalTrackHitRelations";
+    private String HelicalTrackHitRelationsColName = "HelicalTrackHitRelations";
     private String fittedHitsCollectionName = "SVTFittedRawTrackerHits";
     private String rotatedHthRelationsColName = "RotatedHelicalTrackHitRelations";
     private String siClusterCollectionName = "StripClusterer_SiTrackerHitStrip1D";
+    private String SVTTrueHitRelationName = "SVTTrueHitRelations";
 
     // private String StripsCollectionName = "SiTrackerHitStrip";
     //private String MCParticleCollectionName = "MCParticles";
@@ -523,6 +525,10 @@ public class SvtTrackPlotDriver extends Driver {
        // if(!event.hasCollection(SiTrackerHitStrip1D.class)) return;
         
         RelationalTable mcHittomcP = new BaseRelationalTable(RelationalTable.Mode.MANY_TO_MANY, RelationalTable.Weighting.UNWEIGHTED);
+
+        
+        
+        
         RelationalTable rawtomc = new BaseRelationalTable(RelationalTable.Mode.MANY_TO_MANY, RelationalTable.Weighting.UNWEIGHTED);
         if (event.hasCollection(LCRelation.class, "SVTTrueHitRelations")) {
             List<LCRelation> trueHitRelations = event.get(LCRelation.class, "SVTTrueHitRelations");
@@ -852,26 +858,53 @@ public class SvtTrackPlotDriver extends Driver {
      //   Detector detector = (Detector) event.getMetaData(simHits).getIDDecoder().getSubdetector();
         
         // loop over GBL tracks in event
-        List<Track> GBLtracks = event.get(Track.class, GBLtrackCollectionName);        
+        List<Track> GBLtracks = event.get(Track.class, GBLtrackCollectionName);
+        
+        // relate raw hits (to get sim->particles) to tracker hits
+        List<LCRelation> TrueHitRelation = event.get(LCRelation.class, SVTTrueHitRelationName);
+        BaseRelationalTable rawtotracker = new BaseRelationalTable(RelationalTable.Mode.ONE_TO_ONE, RelationalTable.Weighting.UNWEIGHTED);
+        for (LCRelation relation : TrueHitRelation) { 
+            if (relation != null && relation.getFrom() != null && relation.getTo() != null) {
+            	rawtotracker.add(relation.getFrom(), relation.getTo());
+            }
+        }
+        
         for(Track GBLtrack : GBLtracks){
         	
+        	// get MatchedTrack from GBLTrack
             Track matchedTrack = (Track) TracktoGBLTrack.from(GBLtrack);
+            // get hits from track
+            List<TrackerHit> hits = matchedTrack.getTrackerHits();
+            // get raw hits
+            RawTrackerHit rh = (RawTrackerHit) rawtotracker.to(hits.get(0));
+            // get sim->MCP
+ 	        MCParticle mcp = rh.getSimTrackerHits().get(0).getMCParticle();
             
-            double track_X0_IP = TrackUtils.getX0(TrackUtils.getTrackStateAtLocation(GBLtrack, 1));
-            double track_Y0_IP = TrackUtils.getY0(TrackUtils.getTrackStateAtLocation(GBLtrack, 1));
-            double track_Z0_IP = TrackUtils.getZ0(TrackUtils.getTrackStateAtLocation(GBLtrack, 1));
+            //Set<SimTrackerHit> simTrackerHits = rawtomc.allTo(matchedTrack.getTrackerHits());
+            //SimTrackerHit sth = trueHitRelations.to(matchedTrack.getTrackerHits().get(0));
+      //      for (SimTrackerHit hit : simTrackerHits) {           
+      //         MCParticle mcp = hit.getMCParticle();
             
-            double MC_X0_IP = TrackUtils.getMatchedTruthParticle(GBLtrack).getOriginX();
-            double MC_Y0_IP = TrackUtils.getMatchedTruthParticle(GBLtrack).getOriginY();
-            double MC_Z0_IP = TrackUtils.getMatchedTruthParticle(GBLtrack).getOriginZ();
             
-            double track_PX0_IP = GBLtrack.getPX();
-            double track_PY0_IP = GBLtrack.getPY();
-            double track_PZ0_IP = GBLtrack.getPZ();
+            double track_X0_IP = TrackUtils.getX0(TrackUtils.getTrackStateAtLocation(matchedTrack, 1));
+            double track_Y0_IP = TrackUtils.getY0(TrackUtils.getTrackStateAtLocation(matchedTrack, 1));
+            double track_Z0_IP = TrackUtils.getZ0(TrackUtils.getTrackStateAtLocation(matchedTrack, 1));
             
-            double MC_PX0_IP = TrackUtils.getMatchedTruthParticle(GBLtrack).getPX();
-            double MC_PY0_IP = TrackUtils.getMatchedTruthParticle(GBLtrack).getPY();
-            double MC_PZ0_IP = TrackUtils.getMatchedTruthParticle(GBLtrack).getPZ();
+        //    double MC_X0_IP = TrackUtils.getMatchedTruthParticle(matchedTrack).getOriginX();
+        //    double MC_Y0_IP = TrackUtils.getMatchedTruthParticle(matchedTrack).getOriginY();
+        //    double MC_Z0_IP = TrackUtils.getMatchedTruthParticle(matchedTrack).getOriginZ();
+            
+            double MC_X0_IP = mcp.getOriginX();
+            double MC_Y0_IP = mcp.getOriginY();
+            double MC_Z0_IP = mcp.getOriginZ();
+            
+            double track_PX0_IP = matchedTrack.getPX();
+            double track_PY0_IP = matchedTrack.getPY();
+            double track_PZ0_IP = matchedTrack.getPZ();
+            
+            double MC_PX0_IP = mcp.getPX();
+            double MC_PY0_IP = mcp.getPY();
+            double MC_PZ0_IP = mcp.getPZ();
             
             
             //TrackUtils.getMatchedTruthParticle(GBLtrack);
@@ -919,7 +952,7 @@ public class SvtTrackPlotDriver extends Driver {
             trackPlots.get("chi2").fill(matchedTrack.getChi2());
               
             
-            
+              
             
         } // Loop over GBL tracks  
         

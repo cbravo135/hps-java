@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lcsim xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="http://www.lcsim.org/schemas/lcsim/1.0/lcsim.xsd">
+    <!-- 
+      @Creates new TrackStates  
+      @author <a href="mailto:btu29@wildcats.unh.edu">B. Yale</a>
+    -->
+    <execute>
+        <!-- SVT plot driver -->
+        <driver name="TrackStateDriver"/>
+    </execute> 
+    <drivers>   
+        <driver name="TrackStateDriver" type="org.hps.recon.tracking.TrackStateDriver">
+        </driver>
+
+       <!--<driver name="AidaSaveDriver" type="org.lcsim.job.AidaSaveDriver">
+            <outputFileName>${outputFile}.root</outputFileName>
+        </driver>-->       
+
+    </drivers>
+</lcsim>
