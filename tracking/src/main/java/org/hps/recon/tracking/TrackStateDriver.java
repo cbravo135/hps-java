@@ -28,8 +28,8 @@ import hep.aida.ITree;
 import hep.aida.ref.rootwriter.RootFileStore;
 
 /**
- * Driver used to incrementally extrapolate the track to all SVT layers, 
- * using a fieldmap and the positions from the compact, and save the TrackState at each layer.
+ * Driver used to extrapolate tracks to all SVT layers, 
+ * and save the TrackStates.
  * 
  * @author <a href="mailto:btu29@wildcats.unh.edu">Bradley Yale</a>
  * @author <a href="mailto:omoreno@slac.stanford.edu">Omar Moreno</a>
@@ -152,15 +152,13 @@ public final class TrackStateDriver extends Driver {
     protected void detectorChanged(Detector detector) {
     
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// These plots are just for quickly analyzing the output.
-// Will be removed for the final product.
     
         tree = IAnalysisFactory.create().createTreeFactory().create();
         histogramFactory = IAnalysisFactory.create().createHistogramFactory(tree);
         
      // Track Parameters at all Track States
         plotters.put("Track Parameters", plotterFactory.create("Track Parameters"));
-        plotters.get("Track Parameters").createRegions(6, 6);
+        plotters.get("Track Parameters").createRegions(14, 14);
        
       //trackPlots.put("position_X_IP", histogramFactory.createHistogram1D("position_X_IP", 500, -60, 60));
         //plotters.get("Track Parameters").region(1).plot(trackPlots.get("position_X_IP"));
@@ -172,13 +170,13 @@ public final class TrackStateDriver extends Driver {
         plotters.get("Track Parameters").region(0).plot(trackPlots.get("chi2"));
         
         // IP Track Parameters
-        trackPlots.put("D0_IP", histogramFactory.createHistogram1D("D0_IP", 500, -80, 80));
+        trackPlots.put("D0_IP", histogramFactory.createHistogram1D("D0_IP", 500, -5, 5));
         plotters.get("Track Parameters").region(1).plot(trackPlots.get("D0_IP"));
      
-        trackPlots.put("z0_IP", histogramFactory.createHistogram1D("z0_IP", 500, 0, 10));
+        trackPlots.put("z0_IP", histogramFactory.createHistogram1D("z0_IP", 500, -2, 2));
         plotters.get("Track Parameters").region(2).plot(trackPlots.get("z0_IP"));
         
-        trackPlots.put("phi_IP", histogramFactory.createHistogram1D("phi0_IP", 500, -0.15, 0.15));    
+        trackPlots.put("phi_IP", histogramFactory.createHistogram1D("phi0_IP", 500, 0, 0.15));    
         plotters.get("Track Parameters").region(3).plot(trackPlots.get("phi0_IP"));
         
         trackPlots.put("curvature_IP", histogramFactory.createHistogram1D("curvature_IP", 500, -1.5, 1.5));    
@@ -188,13 +186,13 @@ public final class TrackStateDriver extends Driver {
         plotters.get("Track Parameters").region(5).plot(trackPlots.get("tanLambda_IP"));
         
         // L1_axial
-        trackPlots.put("D0_L1_axial", histogramFactory.createHistogram1D("D0_L1_axial", 500, -80, 80));
+        trackPlots.put("D0_L1_axial", histogramFactory.createHistogram1D("D0_L1_axial", 500, 490000, 500000));
         plotters.get("Track Parameters").region(6).plot(trackPlots.get("D0_L1_axial"));
      
-        trackPlots.put("z0_L1_axial", histogramFactory.createHistogram1D("z0_L1_axial", 500, 0, 10));
+        trackPlots.put("z0_L1_axial", histogramFactory.createHistogram1D("z0_L1_axial", 500, -50, 50));
         plotters.get("Track Parameters").region(7).plot(trackPlots.get("z0_L1_axial"));
         
-        trackPlots.put("phi_L1_axial", histogramFactory.createHistogram1D("phi0_L1_axial", 500, -0.15, 0.15));    
+        trackPlots.put("phi_L1_axial", histogramFactory.createHistogram1D("phi0_L1_axial", 500, -0.5, 0.5));    
         plotters.get("Track Parameters").region(8).plot(trackPlots.get("phi0_L1_axial"));
         
         trackPlots.put("curvature_L1_axial", histogramFactory.createHistogram1D("curvature_L1_axial", 500, -1.5, 1.5));    
@@ -202,6 +200,217 @@ public final class TrackStateDriver extends Driver {
         
         trackPlots.put("tanLambda_L1_axial", histogramFactory.createHistogram1D("tanLambda_L1_axial", 500, -0.08, 0.08));    
         plotters.get("Track Parameters").region(10).plot(trackPlots.get("tanLambda_L1_axial"));
+        
+     // L1_stereo
+        trackPlots.put("D0_L1_stereo", histogramFactory.createHistogram1D("D0_L1_stereo", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(11).plot(trackPlots.get("D0_L1_stereo"));
+     
+        trackPlots.put("z0_L1_stereo", histogramFactory.createHistogram1D("z0_L1_stereo", 500, -50, 50));
+        plotters.get("Track Parameters").region(12).plot(trackPlots.get("z0_L1_stereo"));
+        
+        trackPlots.put("phi_L1_stereo", histogramFactory.createHistogram1D("phi0_L1_stereo", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(13).plot(trackPlots.get("phi0_L1_stereo"));
+        
+        trackPlots.put("curvature_L1_stereo", histogramFactory.createHistogram1D("curvature_L1_stereo", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(14).plot(trackPlots.get("curvature_L1_stereo"));
+        
+        trackPlots.put("tanLambda_L1_stereo", histogramFactory.createHistogram1D("tanLambda_L1_stereo", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(15).plot(trackPlots.get("tanLambda_L1_stereo"));
+        
+     // L2_axial
+        trackPlots.put("D0_L2_axial", histogramFactory.createHistogram1D("D0_L2_axial", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(16).plot(trackPlots.get("D0_L2_axial"));
+     
+        trackPlots.put("z0_L2_axial", histogramFactory.createHistogram1D("z0_L2_axial", 500, -50, 50));
+        plotters.get("Track Parameters").region(17).plot(trackPlots.get("z0_L2_axial"));
+        
+        trackPlots.put("phi_L2_axial", histogramFactory.createHistogram1D("phi0_L2_axial", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(18).plot(trackPlots.get("phi0_L2_axial"));
+        
+        trackPlots.put("curvature_L2_axial", histogramFactory.createHistogram1D("curvature_L2_axial", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(19).plot(trackPlots.get("curvature_L2_axial"));
+        
+        trackPlots.put("tanLambda_L2_axial", histogramFactory.createHistogram1D("tanLambda_L2_axial", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(20).plot(trackPlots.get("tanLambda_L2_axial"));
+        
+     // L2_stereo
+        trackPlots.put("D0_L2_stereo", histogramFactory.createHistogram1D("D0_L2_stereo", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(21).plot(trackPlots.get("D0_L2_stereo"));
+     
+        trackPlots.put("z0_L2_stereo", histogramFactory.createHistogram1D("z0_L2_stereo", 500, -50, 50));
+        plotters.get("Track Parameters").region(22).plot(trackPlots.get("z0_L2_stereo"));
+        
+        trackPlots.put("phi_L2_stereo", histogramFactory.createHistogram1D("phi0_L2_stereo", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(23).plot(trackPlots.get("phi0_L2_stereo"));
+        
+        trackPlots.put("curvature_L2_stereo", histogramFactory.createHistogram1D("curvature_L2_stereo", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(24).plot(trackPlots.get("curvature_L2_stereo"));
+        
+        trackPlots.put("tanLambda_L2_stereo", histogramFactory.createHistogram1D("tanLambda_L2_stereo", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(25).plot(trackPlots.get("tanLambda_L2_stereo"));
+        
+     // L3_axial
+        trackPlots.put("D0_L3_axial", histogramFactory.createHistogram1D("D0_L3_axial", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(26).plot(trackPlots.get("D0_L3_axial"));
+     
+        trackPlots.put("z0_L3_axial", histogramFactory.createHistogram1D("z0_L3_axial", 500, -50, 50));
+        plotters.get("Track Parameters").region(27).plot(trackPlots.get("z0_L3_axial"));
+        
+        trackPlots.put("phi_L3_axial", histogramFactory.createHistogram1D("phi0_L3_axial", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(28).plot(trackPlots.get("phi0_L3_axial"));
+        
+        trackPlots.put("curvature_L3_axial", histogramFactory.createHistogram1D("curvature_L3_axial", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(29).plot(trackPlots.get("curvature_L3_axial"));
+        
+        trackPlots.put("tanLambda_L3_axial", histogramFactory.createHistogram1D("tanLambda_L3_axial", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(30).plot(trackPlots.get("tanLambda_L3_axial"));
+        
+     // L3_stereo
+        trackPlots.put("D0_L3_stereo", histogramFactory.createHistogram1D("D0_L3_stereo", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(31).plot(trackPlots.get("D0_L3_stereo"));
+     
+        trackPlots.put("z0_L3_stereo", histogramFactory.createHistogram1D("z0_L3_stereo", 500, -50, 50));
+        plotters.get("Track Parameters").region(32).plot(trackPlots.get("z0_L3_stereo"));
+        
+        trackPlots.put("phi_L3_stereo", histogramFactory.createHistogram1D("phi0_L3_stereo", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(33).plot(trackPlots.get("phi0_L3_stereo"));
+        
+        trackPlots.put("curvature_L3_stereo", histogramFactory.createHistogram1D("curvature_L3_stereo", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(34).plot(trackPlots.get("curvature_L3_stereo"));
+        
+        trackPlots.put("tanLambda_L3_stereo", histogramFactory.createHistogram1D("tanLambda_L3_stereo", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(35).plot(trackPlots.get("tanLambda_L3_stereo"));
+        
+        // L4_axial
+        trackPlots.put("D0_L4_axial", histogramFactory.createHistogram1D("D0_L4_axial", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(36).plot(trackPlots.get("D0_L4_axial"));
+     
+        trackPlots.put("z0_L4_axial", histogramFactory.createHistogram1D("z0_L4_axial", 500, -50, 50));
+        plotters.get("Track Parameters").region(37).plot(trackPlots.get("z0_L4_axial"));
+        
+        trackPlots.put("phi_L4_axial", histogramFactory.createHistogram1D("phi0_L4_axial", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(38).plot(trackPlots.get("phi0_L4_axial"));
+        
+        trackPlots.put("curvature_L4_axial", histogramFactory.createHistogram1D("curvature_L4_axial", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(39).plot(trackPlots.get("curvature_L4_axial"));
+        
+        trackPlots.put("tanLambda_L4_axial", histogramFactory.createHistogram1D("tanLambda_L4_axial", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(40).plot(trackPlots.get("tanLambda_L4_axial"));
+        
+        // L4_stereo
+        trackPlots.put("D0_L4_stereo", histogramFactory.createHistogram1D("D0_L4_stereo", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(41).plot(trackPlots.get("D0_L4_stereo"));
+     
+        trackPlots.put("z0_L4_stereo", histogramFactory.createHistogram1D("z0_L4_stereo", 500, -50, 50));
+        plotters.get("Track Parameters").region(42).plot(trackPlots.get("z0_L4_stereo"));
+        
+        trackPlots.put("phi_L4_stereo", histogramFactory.createHistogram1D("phi0_L4_stereo", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(43).plot(trackPlots.get("phi0_L4_stereo"));
+        
+        trackPlots.put("curvature_L4_stereo", histogramFactory.createHistogram1D("curvature_L4_stereo", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(44).plot(trackPlots.get("curvature_L4_stereo"));
+        
+        trackPlots.put("tanLambda_L4_stereo", histogramFactory.createHistogram1D("tanLambda_L4_stereo", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(45).plot(trackPlots.get("tanLambda_L4_stereo"));
+        
+        
+     // L5_axial
+        trackPlots.put("D0_L5_axial", histogramFactory.createHistogram1D("D0_L5_axial", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(46).plot(trackPlots.get("D0_L5_axial"));
+     
+        trackPlots.put("z0_L5_axial", histogramFactory.createHistogram1D("z0_L5_axial", 500, -50, 50));
+        plotters.get("Track Parameters").region(47).plot(trackPlots.get("z0_L5_axial"));
+        
+        trackPlots.put("phi_L5_axial", histogramFactory.createHistogram1D("phi0_L5_axial", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(48).plot(trackPlots.get("phi0_L5_axial"));
+        
+        trackPlots.put("curvature_L5_axial", histogramFactory.createHistogram1D("curvature_L5_axial", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(49).plot(trackPlots.get("curvature_L5_axial"));
+        
+        trackPlots.put("tanLambda_L5_axial", histogramFactory.createHistogram1D("tanLambda_L5_axial", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(50).plot(trackPlots.get("tanLambda_L5_axial"));
+        
+        // L5_stereo
+        trackPlots.put("D0_L5_stereo", histogramFactory.createHistogram1D("D0_L5_stereo", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(51).plot(trackPlots.get("D0_L5_stereo"));
+     
+        trackPlots.put("z0_L5_stereo", histogramFactory.createHistogram1D("z0_L5_stereo", 500, -50, 50));
+        plotters.get("Track Parameters").region(52).plot(trackPlots.get("z0_L5_stereo"));
+        
+        trackPlots.put("phi_L5_stereo", histogramFactory.createHistogram1D("phi0_L5_stereo", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(53).plot(trackPlots.get("phi0_L5_stereo"));
+        
+        trackPlots.put("curvature_L5_stereo", histogramFactory.createHistogram1D("curvature_L5_stereo", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(54).plot(trackPlots.get("curvature_L5_stereo"));
+        
+        trackPlots.put("tanLambda_L5_stereo", histogramFactory.createHistogram1D("tanLambda_L5_stereo", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(55).plot(trackPlots.get("tanLambda_L5_stereo"));
+        
+        
+     // L6_axial
+        trackPlots.put("D0_L6_axial", histogramFactory.createHistogram1D("D0_L6_axial", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(56).plot(trackPlots.get("D0_L6_axial"));
+     
+        trackPlots.put("z0_L6_axial", histogramFactory.createHistogram1D("z0_L6_axial", 500, -50, 50));
+        plotters.get("Track Parameters").region(57).plot(trackPlots.get("z0_L6_axial"));
+        
+        trackPlots.put("phi_L6_axial", histogramFactory.createHistogram1D("phi0_L6_axial", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(58).plot(trackPlots.get("phi0_L6_axial"));
+        
+        trackPlots.put("curvature_L6_axial", histogramFactory.createHistogram1D("curvature_L6_axial", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(59).plot(trackPlots.get("curvature_L6_axial"));
+        
+        trackPlots.put("tanLambda_L6_axial", histogramFactory.createHistogram1D("tanLambda_L6_axial", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(60).plot(trackPlots.get("tanLambda_L6_axial"));
+        
+        // L6_stereo
+        trackPlots.put("D0_L6_stereo", histogramFactory.createHistogram1D("D0_L6_stereo", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(61).plot(trackPlots.get("D0_L6_stereo"));
+     
+        trackPlots.put("z0_L6_stereo", histogramFactory.createHistogram1D("z0_L6_stereo", 500, -50, 50));
+        plotters.get("Track Parameters").region(62).plot(trackPlots.get("z0_L6_stereo"));
+        
+        trackPlots.put("phi_L6_stereo", histogramFactory.createHistogram1D("phi0_L6_stereo", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(63).plot(trackPlots.get("phi0_L6_stereo"));
+        
+        trackPlots.put("curvature_L6_stereo", histogramFactory.createHistogram1D("curvature_L6_stereo", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(64).plot(trackPlots.get("curvature_L6_stereo"));
+        
+        trackPlots.put("tanLambda_L6_stereo", histogramFactory.createHistogram1D("tanLambda_L6_stereo", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(65).plot(trackPlots.get("tanLambda_L6_stereo"));
+        
+     // ECal_from6
+        trackPlots.put("D0_ECal_from6", histogramFactory.createHistogram1D("D0_ECal_from6", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(66).plot(trackPlots.get("D0_ECal_from6"));
+     
+        trackPlots.put("z0_ECal_from6", histogramFactory.createHistogram1D("z0_ECal_from6", 500, -50, 50));
+        plotters.get("Track Parameters").region(67).plot(trackPlots.get("z0_ECal_from6"));
+        
+        trackPlots.put("phi_ECal_from6", histogramFactory.createHistogram1D("phi0_ECal_from6", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(68).plot(trackPlots.get("phi0_ECal_from6"));
+        
+        trackPlots.put("curvature_ECal_from6", histogramFactory.createHistogram1D("curvature_ECal_from6", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(69).plot(trackPlots.get("curvature_ECal_from6"));
+        
+        trackPlots.put("tanLambda_ECal_from6", histogramFactory.createHistogram1D("tanLambda_ECal_from6", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(70).plot(trackPlots.get("tanLambda_ECal_from6"));
+        
+     // ECal_original
+        trackPlots.put("D0_ECal_original", histogramFactory.createHistogram1D("D0_ECal_original", 500, 490000, 500000));
+        plotters.get("Track Parameters").region(71).plot(trackPlots.get("D0_ECal_original"));
+     
+        trackPlots.put("z0_ECal_original", histogramFactory.createHistogram1D("z0_ECal_original", 500, -50, 50));
+        plotters.get("Track Parameters").region(72).plot(trackPlots.get("z0_ECal_original"));
+        
+        trackPlots.put("phi_ECal_original", histogramFactory.createHistogram1D("phi0_ECal_original", 500, -0.5, 0.5));    
+        plotters.get("Track Parameters").region(73).plot(trackPlots.get("phi0_ECal_original"));
+        
+        trackPlots.put("curvature_ECal_original", histogramFactory.createHistogram1D("curvature_ECal_original", 500, -1.5, 1.5));    
+        plotters.get("Track Parameters").region(74).plot(trackPlots.get("curvature_ECal_original"));
+        
+        trackPlots.put("tanLambda_ECal_original", histogramFactory.createHistogram1D("tanLambda_ECal_original", 500, -0.08, 0.08));    
+        plotters.get("Track Parameters").region(75).plot(trackPlots.get("tanLambda_ECal_original"));
+        
         
         
         
@@ -429,7 +638,7 @@ public final class TrackStateDriver extends Driver {
                throw new RuntimeException("IP track state for track was not found");
            }
            
-          // get track state at ECal (extrapolated from target, to compare)
+          // get old track state at ECal to compare
            TrackState stateECal = TrackUtils.getTrackStateAtLocation(track, TrackState.AtCalorimeter);
            if (stateECal == null) { 
                throw new RuntimeException("ECal track state for track was not found");
@@ -454,36 +663,36 @@ public final class TrackStateDriver extends Driver {
            track.getTrackStates().add(stateLayer1_axial);
 
            // Get the track state at L1 (stereo), extrapolated from L1 (axial)
-           double layer1_stereoZ = stateIP.getTanLambda() > 0 ? L1t0_stereo_Z : L1b1_stereo_Z;
+           double layer1_stereoZ = stateLayer1_axial.getTanLambda() > 0 ? L1t0_stereo_Z : L1b1_stereo_Z;
            //TrackState stateLayer1_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, layer1_axialZ, layer1_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer1_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer1_stereoZ, stepSize, bFieldMap);           
            ((BaseTrackState) stateLayer1_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer1_stereo);
            
            // Get the track state at L2 (axial), extrapolated from L1 (stereo)
-           double layer2_axialZ = stateIP.getTanLambda() > 0 ? L2t0_axial_Z : L2b1_axial_Z; 
-           //TrackState stateLayer2_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, layer1_stereoZ, layer2_axialZ, stepSize, bFieldMap);
+           double layer2_axialZ = stateLayer1_axial.getTanLambda() > 0 ? L2t0_axial_Z : L2b1_axial_Z; 
+           //TrackState stateLayer2_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer1_axial, layer1_axialZ+10, layer2_axialZ, stepSize, bFieldMap);
            TrackState stateLayer2_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer2_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer2_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer2_axial);
            
            // Get the track state at L2 (stereo), extrapolated from L2 (axial)
-           double layer2_stereoZ = stateIP.getTanLambda() > 0 ? L2t0_stereo_Z : L2b1_stereo_Z; 
-           //TrackState stateLayer2_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, layer2_axialZ, layer2_stereoZ, stepSize, bFieldMap);
+           double layer2_stereoZ = stateLayer1_axial.getTanLambda() > 0 ? L2t0_stereo_Z : L2b1_stereo_Z; 
+           //TrackState stateLayer2_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer1_axial, layer1_axialZ+10, layer2_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer2_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer2_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer2_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer2_stereo);           
            
            // Get the track state at L3 (axial), extrapolated from L2 (stereo)
-           double layer3_axialZ = stateIP.getTanLambda() > 0 ? L3t0_axial_Z : L3b1_axial_Z; 
-           //TrackState stateLayer3_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, layer2_stereoZ, layer3_axialZ, stepSize, bFieldMap);
+           double layer3_axialZ = stateLayer2_axial.getTanLambda() > 0 ? L3t0_axial_Z : L3b1_axial_Z; 
+           //TrackState stateLayer3_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer2_axial, layer2_axialZ+10, layer3_axialZ, stepSize, bFieldMap);
            TrackState stateLayer3_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer3_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer3_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer3_axial);
            
            // Get the track state at L3 (stereo), extrapolated from L3 (axial)
-           double layer3_stereoZ = stateIP.getTanLambda() > 0 ? L3t0_stereo_Z : L3b1_stereo_Z; 
-           //TrackState stateLayer3_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, layer3_axialZ, layer3_stereoZ, stepSize, bFieldMap);
+           double layer3_stereoZ = stateLayer2_axial.getTanLambda() > 0 ? L3t0_stereo_Z : L3b1_stereo_Z; 
+           //TrackState stateLayer3_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer2_axial, layer2_axialZ+10, layer3_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer3_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer3_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer3_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer3_stereo);
@@ -492,78 +701,78 @@ public final class TrackStateDriver extends Driver {
            
            // Get the track state at L4 (axial), extrapolated from L3 (stereo)
            double layer4_axialZ;
-           if (stateIP.getOmega() > 0){
-           layer4_axialZ = stateIP.getTanLambda() > 0 ? L4t0_axial_Z : L4b1_axial_Z;
+           if (stateLayer3_axial.getOmega() > 0){
+           layer4_axialZ = stateLayer3_axial.getTanLambda() > 0 ? L4t0_axial_Z : L4b1_axial_Z;
            }else{ 
-           layer4_axialZ = stateIP.getTanLambda() > 0 ? L4t2_axial_Z : L4b3_axial_Z; 
+           layer4_axialZ = stateLayer3_axial.getTanLambda() > 0 ? L4t2_axial_Z : L4b3_axial_Z; 
            }
            
-           //TrackState stateLayer4_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_stereo, layer3_stereoZ, layer4_axialZ, stepSize, bFieldMap);
+          //TrackState stateLayer4_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_axial, extStartPos, layer4_axialZ, stepSize, bFieldMap);
            TrackState stateLayer4_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer4_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer4_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer4_axial);
            
            // Get the track state at L4 (stereo), extrapolated from L4 (axial)
            double layer4_stereoZ;
-           if (stateIP.getOmega() > 0){
-           layer4_stereoZ = stateIP.getTanLambda() > 0 ? L4t0_stereo_Z : L4b1_stereo_Z;
+           if (stateLayer3_axial.getOmega() > 0){
+           layer4_stereoZ = stateLayer3_axial.getTanLambda() > 0 ? L4t0_stereo_Z : L4b1_stereo_Z;
            }else{ 
-           layer4_stereoZ = stateIP.getTanLambda() > 0 ? L4t2_stereo_Z : L4b3_stereo_Z; 
+           layer4_stereoZ = stateLayer3_axial.getTanLambda() > 0 ? L4t2_stereo_Z : L4b3_stereo_Z; 
            }
            
-           //TrackState stateLayer4_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, layer4_axialZ, layer4_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer4_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_axial, extStartPos, layer4_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer4_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer4_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer4_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer4_stereo);
            
            // Get the track state at L5 (axial), extrapolated from L4 (stereo)
            double layer5_axialZ;
-           if (stateIP.getOmega() > 0){
-           layer5_axialZ = stateIP.getTanLambda() > 0 ? L5t0_axial_Z : L5b1_axial_Z;
+           if (stateLayer4_axial.getOmega() > 0){
+           layer5_axialZ = stateLayer4_axial.getTanLambda() > 0 ? L5t0_axial_Z : L5b1_axial_Z;
            }else{ 
-           layer5_axialZ = stateIP.getTanLambda() > 0 ? L5t2_axial_Z : L5b3_axial_Z; 
+           layer5_axialZ = stateLayer4_axial.getTanLambda() > 0 ? L5t2_axial_Z : L5b3_axial_Z; 
            }
                
-           //TrackState stateLayer5_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_stereo, layer4_stereoZ, layer5_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer5_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, extStartPos, layer5_axialZ, stepSize, bFieldMap);
            TrackState stateLayer5_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer5_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer5_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer5_axial);
            
            // Get the track state at L5 (stereo), extrapolated from L5 (axial)
            double layer5_stereoZ;
-           if (stateIP.getOmega() > 0){
-           layer5_stereoZ = stateIP.getTanLambda() > 0 ? L5t0_stereo_Z : L5b1_stereo_Z;
+           if (stateLayer4_axial.getOmega() > 0){
+           layer5_stereoZ = stateLayer4_axial.getTanLambda() > 0 ? L5t0_stereo_Z : L5b1_stereo_Z;
            }else{ 
-           layer5_stereoZ = stateIP.getTanLambda() > 0 ? L5t2_stereo_Z : L5b3_stereo_Z; 
+           layer5_stereoZ = stateLayer4_axial.getTanLambda() > 0 ? L5t2_stereo_Z : L5b3_stereo_Z; 
            }
            
-           //TrackState stateLayer5_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, layer5_axialZ, layer5_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer5_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, extStartPos, layer5_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer5_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer5_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer5_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer5_stereo);
            
            // Get the track state at L6 (axial), extrapolated from L5 (stereo)
            double layer6_axialZ;
-           if (stateIP.getOmega() > 0){
-           layer6_axialZ = stateIP.getTanLambda() > 0 ? L6t0_axial_Z : L6b1_axial_Z;
+           if (stateLayer5_axial.getOmega() > 0){
+           layer6_axialZ = stateLayer5_axial.getTanLambda() > 0 ? L6t0_axial_Z : L6b1_axial_Z;
            }else{ 
-           layer6_axialZ = stateIP.getTanLambda() > 0 ? L6t2_axial_Z : L6b3_axial_Z; 
+           layer6_axialZ = stateLayer5_axial.getTanLambda() > 0 ? L6t2_axial_Z : L6b3_axial_Z; 
            }
            
-           //TrackState stateLayer6_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_stereo, layer5_stereoZ, layer6_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer6_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, extStartPos, layer6_axialZ, stepSize, bFieldMap);
            TrackState stateLayer6_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer6_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer6_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer6_axial);
            
            // Get the track state at L6 (stereo), extrapolated from L6 (axial)
            double layer6_stereoZ;
-           if (stateIP.getOmega() > 0){
-           layer6_stereoZ = stateIP.getTanLambda() > 0 ? L6t0_stereo_Z : L6b1_stereo_Z;
+           if (stateLayer5_axial.getOmega() > 0){
+           layer6_stereoZ = stateLayer5_axial.getTanLambda() > 0 ? L6t0_stereo_Z : L6b1_stereo_Z;
            }else{ 
-           layer6_stereoZ = stateIP.getTanLambda() > 0 ? L6t2_stereo_Z : L6b3_stereo_Z; 
+           layer6_stereoZ = stateLayer5_axial.getTanLambda() > 0 ? L6t2_stereo_Z : L6b3_stereo_Z; 
            }
            
-           //TrackState stateLayer6_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer6_axial, layer6_axialZ, layer6_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer6_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, extStartPos, layer6_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer6_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer6_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer6_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer6_stereo);
@@ -582,9 +791,9 @@ public final class TrackStateDriver extends Driver {
            // Track parameters at IP
            //trackPlots.get("doca_IP").fill(TrackUtils.getDoca(TrackUtils.getTrackStateAtLocation(track, 1)));
            trackPlots.get("chi2").fill(track.getChi2());
-         //  trackPlots.get("position_X_IP").fill(stateLayer5_axial.getReferencePoint()[2] - Math.sin(stateLayer5_axial.getPhi())/stateLayer5_axial.getOmega());
-         //  trackPlots.get("position_Y_IP").fill(stateLayer5_axial.getReferencePoint()[1] + Math.cos(stateLayer5_axial.getPhi())/stateLayer5_axial.getOmega());
-           //trackPlots.get("position_X_IP").fill(TrackUtils.getX0(stateECal));
+         //  trackPlots.get("position_X_IP").fill(stateLayer1_axial.getReferencePoint()[2] - Math.sin(stateLayer1_axial.getPhi())/stateLayer1_axial.getOmega());
+         //  trackPlots.get("position_Y_IP").fill(stateLayer1_axial.getReferencePoint()[1] + Math.cos(stateLayer1_axial.getPhi())/stateLayer1_axial.getOmega());
+         //  trackPlots.get("position_X_IP").fill(TrackUtils.getX0(stateECal));
            //trackPlots.get("position_Y_IP").fill(TrackUtils.getY0(stateECal));
            trackPlots.get("D0_IP").fill(stateIP.getParameters()[ParameterName.d0.ordinal()]);
            trackPlots.get("z0_IP").fill(stateIP.getParameters()[ParameterName.z0.ordinal()]);
@@ -592,11 +801,90 @@ public final class TrackStateDriver extends Driver {
            trackPlots.get("curvature_IP").fill(stateIP.getParameters()[ParameterName.omega.ordinal()]);
            trackPlots.get("tanLambda_IP").fill(stateIP.getParameters()[ParameterName.tanLambda.ordinal()]);
            
-           trackPlots.get("D0_L1_axial").fill(stateLayer3_axial.getParameters()[ParameterName.d0.ordinal()]);
-           trackPlots.get("z0_L1_axial").fill(stateLayer3_axial.getParameters()[ParameterName.z0.ordinal()]);
-           trackPlots.get("phi_L1_axial").fill(stateLayer3_axial.getPhi());
-           trackPlots.get("curvature_L1_axial").fill(stateLayer3_axial.getParameters()[ParameterName.omega.ordinal()]);
-           trackPlots.get("tanLambda_L1_axial").fill(stateLayer3_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           trackPlots.get("D0_L1_axial").fill(stateLayer1_axial.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L1_axial").fill(stateLayer1_axial.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L1_axial").fill(stateLayer1_axial.getPhi());
+           trackPlots.get("curvature_L1_axial").fill(stateLayer1_axial.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L1_axial").fill(stateLayer1_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L1_stereo").fill(stateLayer1_stereo.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L1_stereo").fill(stateLayer1_stereo.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L1_stereo").fill(stateLayer1_stereo.getPhi());
+           trackPlots.get("curvature_L1_stereo").fill(stateLayer1_stereo.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L1_stereo").fill(stateLayer1_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L2_axial").fill(stateLayer2_axial.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L2_axial").fill(stateLayer2_axial.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L2_axial").fill(stateLayer2_axial.getPhi());
+           trackPlots.get("curvature_L2_axial").fill(stateLayer2_axial.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L2_axial").fill(stateLayer2_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L2_stereo").fill(stateLayer2_stereo.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L2_stereo").fill(stateLayer2_stereo.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L2_stereo").fill(stateLayer2_stereo.getPhi());
+           trackPlots.get("curvature_L2_stereo").fill(stateLayer2_stereo.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L2_stereo").fill(stateLayer2_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L3_axial").fill(stateLayer3_axial.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L3_axial").fill(stateLayer3_axial.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L3_axial").fill(stateLayer3_axial.getPhi());
+           trackPlots.get("curvature_L3_axial").fill(stateLayer3_axial.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L3_axial").fill(stateLayer3_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L3_stereo").fill(stateLayer3_stereo.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L3_stereo").fill(stateLayer3_stereo.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L3_stereo").fill(stateLayer3_stereo.getPhi());
+           trackPlots.get("curvature_L3_stereo").fill(stateLayer3_stereo.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L3_stereo").fill(stateLayer3_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L4_axial").fill(stateLayer4_axial.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L4_axial").fill(stateLayer4_axial.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L4_axial").fill(stateLayer4_axial.getPhi());
+           trackPlots.get("curvature_L4_axial").fill(stateLayer4_axial.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L4_axial").fill(stateLayer4_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L4_stereo").fill(stateLayer4_stereo.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L4_stereo").fill(stateLayer4_stereo.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L4_stereo").fill(stateLayer4_stereo.getPhi());
+           trackPlots.get("curvature_L4_stereo").fill(stateLayer4_stereo.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L4_stereo").fill(stateLayer4_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L5_axial").fill(stateLayer5_axial.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L5_axial").fill(stateLayer5_axial.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L5_axial").fill(stateLayer5_axial.getPhi());
+           trackPlots.get("curvature_L5_axial").fill(stateLayer5_axial.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L5_axial").fill(stateLayer5_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L5_stereo").fill(stateLayer5_stereo.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L5_stereo").fill(stateLayer5_stereo.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L5_stereo").fill(stateLayer5_stereo.getPhi());
+           trackPlots.get("curvature_L5_stereo").fill(stateLayer5_stereo.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L5_stereo").fill(stateLayer5_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L6_axial").fill(stateLayer6_axial.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L6_axial").fill(stateLayer6_axial.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L6_axial").fill(stateLayer6_axial.getPhi());
+           trackPlots.get("curvature_L6_axial").fill(stateLayer6_axial.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L6_axial").fill(stateLayer6_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_L6_stereo").fill(stateLayer6_stereo.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_L6_stereo").fill(stateLayer6_stereo.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_L6_stereo").fill(stateLayer6_stereo.getPhi());
+           trackPlots.get("curvature_L6_stereo").fill(stateLayer6_stereo.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_L6_stereo").fill(stateLayer6_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_ECal_from6").fill(stateEcalfromLayer6.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_ECal_from6").fill(stateEcalfromLayer6.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_ECal_from6").fill(stateEcalfromLayer6.getPhi());
+           trackPlots.get("curvature_ECal_from6").fill(stateEcalfromLayer6.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_ECal_from6").fill(stateEcalfromLayer6.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
+           trackPlots.get("D0_ECal_original").fill(stateECal.getParameters()[ParameterName.d0.ordinal()]);
+           trackPlots.get("z0_ECal_original").fill(stateECal.getParameters()[ParameterName.z0.ordinal()]);
+           trackPlots.get("phi_ECal_original").fill(stateECal.getPhi());
+           trackPlots.get("curvature_ECal_original").fill(stateECal.getParameters()[ParameterName.omega.ordinal()]);
+           trackPlots.get("tanLambda_ECal_original").fill(stateECal.getParameters()[ParameterName.tanLambda.ordinal()]);
+           
            
            
            
@@ -637,18 +925,16 @@ public final class TrackStateDriver extends Driver {
       //     System.out.println(L6b3_axial_Z);
       //     System.out.println(L6b3_stereo_Z);
            
-         
-        //   System.out.println(stateIP.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer1_axial.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer1_stereo.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer2_axial.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer2_stereo.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer3_axial.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer3_stereo.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer4_axial.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer5_axial.getParameters()[ParameterName.omega.ordinal()]);
-        //   System.out.println(stateLayer6_axial.getParameters()[ParameterName.omega.ordinal()]);
-           //System.out.println(ecalPosition);
+         /*  System.out.println(stateIP.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer1_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer1_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer2_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer2_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer3_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer3_stereo.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer4_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer5_axial.getParameters()[ParameterName.tanLambda.ordinal()]);
+           System.out.println(stateLayer6_axial.getParameters()[ParameterName.tanLambda.ordinal()]);*/
            
            
         } // loop over tracks
