@@ -1,0 +1,30 @@
+<lcsim xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" 
+       xs:noNamespaceSchemaLocation="http://www.lcsim.org/schemas/lcsim/1.0/lcsim.xsd">
+    
+    <execute>
+        <driver name="TriggerSkimmer"/>
+        <driver name="MollerSkim"/>
+        <driver name="LCIOWriter"/>
+    </execute>    
+
+    <drivers>
+        <driver name="TriggerSkimmer" type="org.hps.recon.filtering.Pair0TriggerFilterDriver">
+        </driver>
+        <driver name="MollerSkim" type = "org.hps.users.spaul.skims.MollerSkimTest">
+        	<mollerCollectionName>TargetConstrainedMollerCandidates</mollerCollectionName>
+        	<clusterCollectionName>EcalClustersCorr</clusterCollectionName>
+       		<useOneClusterCuts>false</useOneClusterCuts>
+       		<useTwoClusterCuts>true</useTwoClusterCuts>
+       		<clusterXMax>-30</clusterXMax>
+       		<clusterXMin>-150</clusterXMin>
+       		<clusterXSumMax>0</clusterXSumMax>
+			<clusterXSumMin>-190</clusterXSumMin>
+       		<trackPMin>0</trackPMin>
+       		<trackPMax>1000000</trackPMax>
+       		
+       	</driver>
+        <driver name="LCIOWriter" type="org.lcsim.util.loop.LCIODriver">
+            <outputFilePath>${outputFile}.slcio</outputFilePath>
+        </driver>
+    </drivers>   
+</lcsim>
