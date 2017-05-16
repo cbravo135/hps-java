@@ -8,7 +8,7 @@
     </execute>    
 
     <drivers>
-        <driver name="TriggerSkimmer" type="org.hps.recon.filtering.Single0TriggerFilterDriver">
+        <driver name="TriggerSkimmer" type="org.hps.recon.filtering.Pair0TriggerFilterDriver">
         </driver>
         <driver name="MollerSkim" type = "org.hps.users.spaul.skims.MollerSkimTest">
         	<mollerCollectionName>TargetConstrainedMollerCandidates</mollerCollectionName>

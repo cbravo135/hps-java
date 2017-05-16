@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.hps.conditions.beam.BeamEnergy.BeamEnergyCollection;
-import org.hps.recon.ecal.tdeg.TdegTweakDriver;
+//import org.hps.recon.ecal.tdeg.TdegTweakDriver;
 import org.hps.record.triggerbank.AbstractIntData;
 import org.hps.record.triggerbank.TIData;
 import org.hps.rundb.RunManager;

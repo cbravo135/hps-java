@@ -27,6 +27,14 @@ public class MassHistogramDriver extends Driver{
     private double trackClusterTimeDiffThresholdAbs = 4.5;
 
     private int maxSharedHits = 3;
+    private boolean useBeamEnergyConstraint;
+    /**
+     * determines whether or not the mass will be scaled down if the 
+     * reconstructed pair momentum is greater than the beam energy.  
+     */
+    public void setBeamEnergyConstraint(boolean val){
+        useBeamEnergyConstraint = val;
+    }
     
     public void setRadThreshold(double val){
         radThreshold = val;
@@ -284,7 +292,7 @@ public class MassHistogramDriver extends Driver{
         preliminaryCleanup(v0s);
         cleanupDuplicates(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massPreliminary.fill(v0.getMass());
+            massPreliminary.fill(getMass(v0));
             cdtPreliminary.fill(getClusterTimeDiff(v0));
         }
 
@@ -297,7 +305,7 @@ public class MassHistogramDriver extends Driver{
         }
         feeCut(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massNoFee.fill(v0.getMass());
+            massNoFee.fill(getMass(v0));
             cdtNoFee.fill(getClusterTimeDiff(v0));
 
         }
@@ -308,7 +316,7 @@ public class MassHistogramDriver extends Driver{
         }
         pzMaxCut(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massPzCut.fill(v0.getMass());
+            massPzCut.fill(getMass(v0));
             cdtPzCut.fill(getClusterTimeDiff(v0));
 
         }
@@ -320,7 +328,7 @@ public class MassHistogramDriver extends Driver{
         }
         trackChi2Cut(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massTrackChi2Cut.fill(v0.getMass());
+            massTrackChi2Cut.fill(getMass(v0));
             cdtTrackChi2Cut.fill(getClusterTimeDiff(v0));
 
         }
@@ -337,7 +345,7 @@ public class MassHistogramDriver extends Driver{
         }
         clusterTrackDTCut(v0s, event);
         for(ReconstructedParticle v0 : v0s){
-            massClusterTrackDtCut.fill(v0.getMass());
+            massClusterTrackDtCut.fill(getMass(v0));
             cdtClusterTrackDtCut.fill(getClusterTimeDiff(v0));
 
         }
@@ -352,7 +360,7 @@ public class MassHistogramDriver extends Driver{
         }
         L1L2Cut(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massL1Cut.fill(v0.getMass());
+            massL1Cut.fill(getMass(v0));
             cdtL1Cut.fill(getClusterTimeDiff(v0));
 
         }
@@ -364,7 +372,7 @@ public class MassHistogramDriver extends Driver{
         }
         d0Cut(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massPosD0Cut.fill(v0.getMass());
+            massPosD0Cut.fill(getMass(v0));
             cdtPosD0Cut.fill(getClusterTimeDiff(v0));
 
         }
@@ -401,12 +409,12 @@ public class MassHistogramDriver extends Driver{
         //now for the final cut:  cluster dt.  
         clusterDtCut(v0s);
         for(ReconstructedParticle v0 : v0s){
-            massFinal.fill(v0.getMass());
+            massFinal.fill(getMass(v0));
             cdtFinal.fill(getClusterTimeDiff(v0));
 
             massVsPzFinal.fill(v0.getMass(), v0.getMomentum().z());
             if(v0.getMomentum().z()>radThreshold){
-                massRad.fill(v0.getMass());
+                massRad.fill(getMass(v0));
                 cdtRad.fill(getClusterTimeDiff(v0));
             }
         }
@@ -415,7 +423,13 @@ public class MassHistogramDriver extends Driver{
 
     }
 
-
+    double getMass(ReconstructedParticle v0){
+        double mass = v0.getMass();
+        if(useBeamEnergyConstraint && v0.getMomentum().z()>2.306)
+            mass*=  2.306/v0.getMomentum().z();
+        return mass;
+    }
+    
     /*private double getD0(Track track){
         double d0 =  TrackUtils.getDoca(track); 
         //make correction due to target being at -5 mm 

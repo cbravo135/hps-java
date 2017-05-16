@@ -39,7 +39,7 @@ import org.hps.rundb.RunManager;
 public class SvtChargeIntegrator {
 
 	private static final double angleTolerance = 1e-4;
-	private static final double burstModeNoiseEfficiency = 0.965;
+	private static final double defaultBurstModeNoiseEfficiency = 0.965;
 	//below this number, the current is counted as zero.  
 	private static double zeroPointThreshold = .1;
 
@@ -57,7 +57,9 @@ public class SvtChargeIntegrator {
 		options.addOption(new Option("e", true, "header error file"));
 		options.addOption(new Option("d", false, "use 0.5 as the nominal svt position (rather than look in run DB for it)"));
 		options.addOption(new Option("z", true, "use zeropoint value from a file"));
-		
+		options.addOption(new Option("b", true, "burstmode noise efficiency"));
+		options.addOption(new Option("l", false, "don't look up latency values from database."));
+        
 		
 		final CommandLineParser parser = new PosixParser();
 		CommandLine cl = null;
@@ -127,6 +129,19 @@ public class SvtChargeIntegrator {
 			printUsage(options);
 			return;
 		}
+		
+		double burstModeNoiseEfficiency;
+		if(cl.hasOption("b")){
+		    burstModeNoiseEfficiency = Double.parseDouble(cl.getOptionValue("b"));
+		}
+		else{
+		    burstModeNoiseEfficiency = defaultBurstModeNoiseEfficiency;
+		}
+		
+		boolean useLatencyFromConditionsDatabase = true;
+		if(cl.hasOption("l"))
+		    useLatencyFromConditionsDatabase = false;
+		
 
 		List<CSVRecord> records = null;
 		try {
@@ -254,19 +269,21 @@ public class SvtChargeIntegrator {
 						nominalAngleBottom = 0;
 					}
 					efficiency = burstModeNoiseEfficiency;
-					SvtTimingConstants svtTimingConstants;
-					try {
-						svtTimingConstants = DatabaseConditionsManager.getInstance().getCachedConditions(SvtTimingConstants.SvtTimingConstantsCollection.class, "svt_timing_constants").getCachedData().get(0);
-					} catch (Exception ex) {
-						svtTimingConstants = null;
+					if(useLatencyFromConditionsDatabase){
+					    SvtTimingConstants svtTimingConstants;
+					    try {
+						    svtTimingConstants = DatabaseConditionsManager.getInstance().getCachedConditions(SvtTimingConstants.SvtTimingConstantsCollection.class, "svt_timing_constants").getCachedData().get(0);
+					    } catch (Exception ex) {
+					        svtTimingConstants = null;
+					    }
+					    if (svtTimingConstants != null) {
+						    if (svtTimingConstants.getOffsetTime() > 27) {
+							    efficiency *= 2.0 / 3.0; // bad latency: drop 2 out of 6 trigger phases
+						    }// otherwise, we have good latency
+					    } else {
+						    efficiency = 0;
+					    }//no latency info in conditions: give up
 					}
-					if (svtTimingConstants != null) {
-						if (svtTimingConstants.getOffsetTime() > 27) {
-							efficiency *= 2.0 / 3.0; // bad latency: drop 2 out of 6 trigger phases
-						}// otherwise, we have good latency
-					} else {
-						efficiency = 0;
-					}//no latency info in conditions: give up
 					currentRun = runNum;
 				}
 
