@@ -7,9 +7,8 @@
     </execute>    
 
     <drivers>
-        <driver name="V0CollectionSkim" type = "org.hps.recon.filtering.CollectionSizeFilter">
-        	<collectionName>TargetConstrainedV0Candidates</collectionName>
-        	<minSize>1</minSize>
+        <driver name="V0CollectionSkim" type = "org.hps.users.spaul.skims.V0SkimTest">
+        	<requireOppositeClusters>true</requireOppositeClusters>
         </driver>
         <driver name="LCIOWriter" type="org.lcsim.util.loop.LCIODriver">
             <outputFilePath>${outputFile}.slcio</outputFilePath>
