@@ -4,9 +4,7 @@ import static org.hps.conditions.svt.AbstractSvtChannel.MAX_NUMBER_OF_SAMPLES;
 
 import org.hps.conditions.api.BaseConditionsObject;
 import org.hps.conditions.api.BaseConditionsObjectCollection;
-import org.hps.conditions.database.Converter;
 import org.hps.conditions.database.Field;
-import org.hps.conditions.database.MultipleCollectionsAction;
 import org.hps.conditions.database.Table;
 
 /**
@@ -16,7 +14,6 @@ import org.hps.conditions.database.Table;
  * @author Omar Moreno, UCSC
  */
 @Table(names = {"svt_calibrations", "test_run_svt_calibrations"})
-@Converter(multipleCollectionsAction = MultipleCollectionsAction.LAST_UPDATED)
 public final class SvtCalibration extends BaseConditionsObject {
 
     /**
