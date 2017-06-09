@@ -68,19 +68,21 @@ public final class TimeDependentEnergyCorrection extends BaseConditionsObject {
 
     /**
      * Get the reference time for the formula (usually about an hour or so 
-     * before the first good run that weekend) in seconds.  
+     * before the first good run that weekend) in ns.  
      *
-     * @return the gain value
+     * @return the reference time in ns
      */
     @Field(names = {"t0"})
-    public Double getT0() {
+    public Long getT0() {
         return this.getFieldValue("t0");
     }
     
     /**
-     * Get the gain value in units of MeV/ADC count.
+     * Get the parameter A for the correction, which is of the form
+     * <p>
+     * E<sub>new</sub> = E<sub>old</sub>*(E<sub>beam</sub>/(A-B*exp(-(timestamp-t0)/C))))
      *
-     * @return the gain value
+     * @return the parameter A
      */
     @Field(names = {"a"})
     public Double getA() {
@@ -88,9 +90,12 @@ public final class TimeDependentEnergyCorrection extends BaseConditionsObject {
     }
     
     /**
-     * Get the gain value in units of MeV/ADC count.
+     * Get the parameter B for the correction, which is of the form
+     * <p>
+     * E<sub>new</sub> = E<sub>old</sub>*(E<sub>beam</sub>/(A-B*exp(-(timestamp-t0)/C))))
      *
-     * @return the gain value
+     *
+     * @return the parameter B
      */
     @Field(names = {"b"})
     public Double getB() {
@@ -98,26 +103,17 @@ public final class TimeDependentEnergyCorrection extends BaseConditionsObject {
     }
     
     /**
-     * Get the gain value in units of MeV/ADC count.
+     * Get the parameter C for the correction, which is of the form
+     * <p>
+     * E<sub>new</sub> = E<sub>old</sub>*(E<sub>beam</sub>/(A-B*exp(-(timestamp-t0)/C))))
      *
-     * @return the gain value
+     * @return the parameter C  
      */
     @Field(names = {"c"})
     public Double getC() {
         return this.getFieldValue("c");
     }
     
-    /**
-     * calculates the correction needed
-     * @param timestamp the event timestamp, converted to seconds.
-     * @return 
-     */
-    public Double calculateCorrection(long timestamp){
-        double A = getA();
-        double B = getB();
-        double C = getC();
-        double t0 = getT0();
-        return A+B*Math.exp(-(timestamp-t0)/C);
-    }
+    
     
 }

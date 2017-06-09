@@ -3,6 +3,7 @@ package org.hps.recon.ecal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hps.conditions.beam.BeamEnergy;
 import org.hps.conditions.beam.BeamEnergy.BeamEnergyCollection;
 import org.hps.conditions.database.DatabaseConditionsManager;
 import org.hps.conditions.ecal.EcalChannelConstants;
@@ -21,12 +22,22 @@ public class TimeDependentEnergyCorrectionsDriver extends Driver{
     private String outputHitsCollectionName;
     private boolean isTransient = true;
 
-   private EcalConditions ecalConditions;
+    
+    private EcalConditions ecalConditions;
 
+    private double beamEnergy;
+    
     double getCorrectionFactor(CalorimeterHit hit, long timestamp){
 
         long cellID = hit.getCellID();
-        return findChannel(cellID).getTimeDependentEnergyCorrection().calculateCorrection(timestamp);
+        TimeDependentEnergyCorrection corr = findChannel(cellID).getTimeDependentEnergyCorrection();
+        
+        double A = corr.getA();
+        double B = corr.getB();
+        double C = corr.getC();
+        long t0 = corr.getT0(); 
+        
+        return beamEnergy/(A-B*Math.exp(-(timestamp-t0)/C));
     }    
 
     public EcalChannelConstants findChannel(long cellID) {
@@ -41,7 +52,7 @@ public class TimeDependentEnergyCorrectionsDriver extends Driver{
     public void process(EventHeader event){
         List<CalorimeterHit> hits = event.get(CalorimeterHit.class, inputHitsCollectionName);
         int flags = event.getMetaData(hits).getFlags();
-        long timestamp = event.getTimeStamp()/1000000000; //convert to ns.  
+        long timestamp = event.getTimeStamp(); //convert to ns.  
         List<CalorimeterHit> outhits = new ArrayList();
 
 
@@ -75,6 +86,9 @@ public class TimeDependentEnergyCorrectionsDriver extends Driver{
     public void detectorChanged(Detector detector){
         DatabaseConditionsManager manager = DatabaseConditionsManager.getInstance();
         ecalConditions = manager.getEcalConditions();
+        BeamEnergy.BeamEnergyCollection beamEnergyCollection
+            = this.getConditionsManager().getCachedConditions(BeamEnergy.BeamEnergyCollection.class, "beam_energies").getCachedData();
+        this.beamEnergy = beamEnergyCollection.get(0).getBeamEnergy();
 
     }
 }
