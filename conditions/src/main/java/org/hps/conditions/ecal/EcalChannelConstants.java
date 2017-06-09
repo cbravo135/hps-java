@@ -37,6 +37,11 @@ public final class EcalChannelConstants {
     private EcalPulseWidth pulseWidth = null;
 
     /**
+     * The channel's {@link TimeDependentEnergyCorrection} conditions.
+     */
+    private TimeDependentEnergyCorrection timeDependentEnergyCorrection;
+
+    /**
      * Class constructor, which is package protected.
      */
     EcalChannelConstants() {
@@ -76,6 +81,16 @@ public final class EcalChannelConstants {
      */
     public EcalTimeShift getTimeShift() {
         return this.timeShift;
+    }
+    
+    /**
+     * Get the time-dependent energy correction.
+     *
+     * @return the time-dependent energy correction
+     */
+    public TimeDependentEnergyCorrection getTimeDependentEnergyCorrection() {
+        return this.timeDependentEnergyCorrection;
+        
     }
 
     /**
@@ -131,4 +146,14 @@ public final class EcalChannelConstants {
     void setPulseWidth(final EcalPulseWidth pulseWidth) {
         this.pulseWidth = pulseWidth;
     }
+    
+    /**
+     * Set the time-dependent energy correction.
+     * 
+     * @param timeDependentEnergyCorrection
+     */
+    void setTimeDependentEnergyCorrection(final TimeDependentEnergyCorrection timeDependentEnergyCorrection) {
+        this.timeDependentEnergyCorrection = timeDependentEnergyCorrection;
+    }
+
 }

@@ -12,6 +12,7 @@ import org.hps.conditions.ecal.EcalChannel.EcalChannelCollection;
 import org.hps.conditions.ecal.EcalGain.EcalGainCollection;
 import org.hps.conditions.ecal.EcalPulseWidth.EcalPulseWidthCollection;
 import org.hps.conditions.ecal.EcalTimeShift.EcalTimeShiftCollection;
+import org.hps.conditions.ecal.TimeDependentEnergyCorrection.TimeDependentEnergyCorrectionCollection;
 import org.lcsim.conditions.ConditionsConverter;
 import org.lcsim.conditions.ConditionsManager;
 import org.lcsim.geometry.Detector;
@@ -109,6 +110,19 @@ public class EcalConditionsConverter implements ConditionsConverter<EcalConditio
             LOGGER.warning("no conditions found for EcalTimeShiftCollection");
         }
         
+     // Get the ECal time-dependent energy corrections shifts from the conditions database and add them to the conditions set.
+        if (getDatabaseConditionsManager().hasConditionsRecord("ecal_time_dependent_energy_corrections")) {
+            final TimeDependentEnergyCorrectionCollection timeDependentEnergyCorrectionCollection = this.getEcalTimeDependentEnergyCorrectionCollection();
+            for (final TimeDependentEnergyCorrection timeDependentEnergyCorrection : timeDependentEnergyCorrectionCollection) {
+                final ChannelId channelId = new ChannelId(new int[] {timeDependentEnergyCorrection.getChannelId()});
+                final EcalChannel channel = channels.findChannel(channelId);
+                conditions.getChannelConstants(channel).setTimeDependentEnergyCorrection(timeDependentEnergyCorrection);
+            }
+        } else {
+            // If time shifts do not exist it is not a fatal error.
+            LOGGER.warning("no conditions found for TimeDependentEnergyCorrectionCollection");
+        }
+        
         // Set the channel pulse width if it exists in the database.
         if (getDatabaseConditionsManager().hasConditionsRecord("ecal_pulse_widths")) {
             final EcalPulseWidthCollection pulseWidths = this.getEcalPulseWidthCollection();
@@ -124,6 +138,15 @@ public class EcalConditionsConverter implements ConditionsConverter<EcalConditio
 
         // Return the conditions object to caller.
         return conditions;
+    }
+
+    /**
+     * Get the default {@link EcalCalibration} collection.
+     *
+     * @return the collection of ECAL channel calibration objects
+     */
+    protected TimeDependentEnergyCorrectionCollection getEcalTimeDependentEnergyCorrectionCollection() {
+        return getDatabaseConditionsManager().getCachedConditions(TimeDependentEnergyCorrectionCollection.class, "ecal_time_dependent_energy_corrections").getCachedData();
     }
 
     /**
