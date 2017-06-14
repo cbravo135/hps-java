@@ -216,7 +216,7 @@ public class MultipleScattering extends org.lcsim.recon.tracking.seedtracker.Mul
         // -> this is not very general, as it assumes that strips are (mostly) along y -> FIX
         // THIS!?
         // Transformation from tracking to detector frame
-        Hep3Matrix invTransform = VecOp.inverse(CoordinateTransformations.getMatrix());
+        Hep3Matrix invTransform = CoordinateTransformations.getInverseMatrix();
         
         Hep3Vector pos_det = VecOp.mult(invTransform, pos);
         Hep3Vector direction_det = VecOp.mult(invTransform, direction);

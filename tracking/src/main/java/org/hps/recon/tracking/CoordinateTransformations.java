@@ -4,6 +4,7 @@ import hep.physics.matrix.SymmetricMatrix;
 import hep.physics.vec.BasicHep3Matrix;
 import hep.physics.vec.Hep3Matrix;
 import hep.physics.vec.Hep3Vector;
+import hep.physics.vec.VecOp;
 
 import org.lcsim.detector.Rotation3D;
 import org.lcsim.detector.Transform3D;
@@ -24,7 +25,8 @@ import org.lcsim.detector.Transform3D;
 public class CoordinateTransformations {
 
     private static final Transform3D _detToTrk = CoordinateTransformations.initialize();
-
+    private static Transform3D _trkToDet;
+    
     /**
      * Private constructor to prevent initialization
      */
@@ -40,7 +42,9 @@ public class CoordinateTransformations {
         tmp.setElement(0, 2, 1);
         tmp.setElement(1, 0, 1);
         tmp.setElement(2, 1, 1);
-        return new Transform3D(new Rotation3D(tmp));
+        Transform3D ret = new Transform3D(new Rotation3D(tmp));
+        _trkToDet = new Transform3D(new Rotation3D(VecOp.inverse(tmp)));
+        return ret;
     }
 
     public static Hep3Vector transformVectorToTracking(Hep3Vector vec) {
@@ -65,6 +69,10 @@ public class CoordinateTransformations {
 
     public static Hep3Matrix getMatrix() {
         return _detToTrk.getRotation().getRotationMatrix();
+    }
+
+    public static Hep3Matrix getInverseMatrix() {
+        return  _trkToDet.getRotation().getRotationMatrix();
     }
 
 }
