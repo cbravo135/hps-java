@@ -24,8 +24,10 @@ import org.lcsim.detector.Transform3D;
 // FIXME: I am not sure this class should be located in this package. --JM
 public class CoordinateTransformations {
 
-    private static final Transform3D _detToTrk = CoordinateTransformations.initialize();
-    private static Transform3D _trkToDet;
+    
+    
+    private static final Transform3D _detToTrk;
+    private static final Transform3D _trkToDet;
     
     /**
      * Private constructor to prevent initialization
@@ -34,17 +36,16 @@ public class CoordinateTransformations {
     }
 
     /**
-     * Static private initialization of transform
-     * @return transform
+     * Static private initialization of transform and its inverse
      */
-    private static Transform3D initialize() {
+    static {
         BasicHep3Matrix tmp = new BasicHep3Matrix();
         tmp.setElement(0, 2, 1);
         tmp.setElement(1, 0, 1);
         tmp.setElement(2, 1, 1);
-        Transform3D ret = new Transform3D(new Rotation3D(tmp));
+        _detToTrk = new Transform3D(new Rotation3D(tmp));
         _trkToDet = new Transform3D(new Rotation3D(VecOp.inverse(tmp)));
-        return ret;
+        
     }
 
     public static Hep3Vector transformVectorToTracking(Hep3Vector vec) {
