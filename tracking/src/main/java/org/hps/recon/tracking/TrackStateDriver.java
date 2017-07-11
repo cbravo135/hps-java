@@ -613,12 +613,17 @@ public final class TrackStateDriver extends Driver {
     
         // If the event doesn't have the specified collection of tracks, throw
         // an exception.
-        if (!event.hasCollection(Track.class, seedTrackCollectionName)) {
-            throw new RuntimeException("Track collection " + seedTrackCollectionName + " doesn't exist");
-        }
+    //    if (!event.hasCollection(Track.class, seedTrackCollectionName)) {
+    //        throw new RuntimeException("Track collection " + seedTrackCollectionName + " doesn't exist");
+    //    }
+    
+         if (!event.hasCollection(Track.class, gblTrackCollectionName)) {
+                throw new RuntimeException("Track collection " + gblTrackCollectionName + " doesn't exist");
+            }
         
         // Get the collection of tracks from the event
-        List<Track> tracks = event.get(Track.class, seedTrackCollectionName);
+    //    List<Track> tracks = event.get(Track.class, seedTrackCollectionName);
+          List<Track> tracks = event.get(Track.class, gblTrackCollectionName);
         
         // Loop through all tracks in an event and find/save track states at all the layers
         for (Track track : tracks) { 
@@ -671,28 +676,28 @@ public final class TrackStateDriver extends Driver {
            
            // Get the track state at L2 (axial), extrapolated from L1 (stereo)
            double layer2_axialZ = stateLayer1_axial.getTanLambda() > 0 ? L2t0_axial_Z : L2b1_axial_Z; 
-           //TrackState stateLayer2_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer1_axial, layer1_axialZ+10, layer2_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer2_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer1_axial, layer1_axialZ, layer2_axialZ, stepSize, bFieldMap);
            TrackState stateLayer2_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer2_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer2_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer2_axial);
            
            // Get the track state at L2 (stereo), extrapolated from L2 (axial)
            double layer2_stereoZ = stateLayer1_axial.getTanLambda() > 0 ? L2t0_stereo_Z : L2b1_stereo_Z; 
-           //TrackState stateLayer2_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer1_axial, layer1_axialZ+10, layer2_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer2_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer1_axial, layer1_axialZ, layer2_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer2_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer2_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer2_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer2_stereo);           
            
            // Get the track state at L3 (axial), extrapolated from L2 (stereo)
            double layer3_axialZ = stateLayer2_axial.getTanLambda() > 0 ? L3t0_axial_Z : L3b1_axial_Z; 
-           //TrackState stateLayer3_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer2_axial, layer2_axialZ+10, layer3_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer3_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer2_axial, layer2_axialZ, layer3_axialZ, stepSize, bFieldMap);
            TrackState stateLayer3_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer3_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer3_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer3_axial);
            
            // Get the track state at L3 (stereo), extrapolated from L3 (axial)
            double layer3_stereoZ = stateLayer2_axial.getTanLambda() > 0 ? L3t0_stereo_Z : L3b1_stereo_Z; 
-           //TrackState stateLayer3_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer2_axial, layer2_axialZ+10, layer3_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer3_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer2_axial, layer2_axialZ, layer3_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer3_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer3_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer3_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer3_stereo);
@@ -707,7 +712,7 @@ public final class TrackStateDriver extends Driver {
            layer4_axialZ = stateLayer3_axial.getTanLambda() > 0 ? L4t2_axial_Z : L4b3_axial_Z; 
            }
            
-          //TrackState stateLayer4_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_axial, extStartPos, layer4_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer4_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_axial, layer3_axialZ, layer4_axialZ, stepSize, bFieldMap);
            TrackState stateLayer4_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer4_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer4_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer4_axial);
@@ -720,7 +725,7 @@ public final class TrackStateDriver extends Driver {
            layer4_stereoZ = stateLayer3_axial.getTanLambda() > 0 ? L4t2_stereo_Z : L4b3_stereo_Z; 
            }
            
-           //TrackState stateLayer4_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_axial, extStartPos, layer4_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer4_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer3_axial, layer3_axialZ, layer4_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer4_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer4_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer4_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer4_stereo);
@@ -733,7 +738,7 @@ public final class TrackStateDriver extends Driver {
            layer5_axialZ = stateLayer4_axial.getTanLambda() > 0 ? L5t2_axial_Z : L5b3_axial_Z; 
            }
                
-           //TrackState stateLayer5_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, extStartPos, layer5_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer5_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, layer4_axialZ, layer5_axialZ, stepSize, bFieldMap);
            TrackState stateLayer5_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer5_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer5_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer5_axial);
@@ -746,7 +751,7 @@ public final class TrackStateDriver extends Driver {
            layer5_stereoZ = stateLayer4_axial.getTanLambda() > 0 ? L5t2_stereo_Z : L5b3_stereo_Z; 
            }
            
-           //TrackState stateLayer5_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, extStartPos, layer5_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer5_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer4_axial, layer4_axialZ, layer5_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer5_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer5_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer5_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer5_stereo);
@@ -759,7 +764,7 @@ public final class TrackStateDriver extends Driver {
            layer6_axialZ = stateLayer5_axial.getTanLambda() > 0 ? L6t2_axial_Z : L6b3_axial_Z; 
            }
            
-           //TrackState stateLayer6_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, extStartPos, layer6_axialZ, stepSize, bFieldMap);
+           //TrackState stateLayer6_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, layer5_axialZ, layer6_axialZ, stepSize, bFieldMap);
            TrackState stateLayer6_axial = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer6_axialZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer6_axial).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer6_axial);
@@ -772,13 +777,13 @@ public final class TrackStateDriver extends Driver {
            layer6_stereoZ = stateLayer5_axial.getTanLambda() > 0 ? L6t2_stereo_Z : L6b3_stereo_Z; 
            }
            
-           //TrackState stateLayer6_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, extStartPos, layer6_stereoZ, stepSize, bFieldMap);
+           //TrackState stateLayer6_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer5_axial, layer5_axialZ, layer6_stereoZ, stepSize, bFieldMap);
            TrackState stateLayer6_stereo = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, layer6_stereoZ, stepSize, bFieldMap);
            ((BaseTrackState) stateLayer6_stereo).setLocation(TrackState.AtOther);
            track.getTrackStates().add(stateLayer6_stereo);
            
            // Extrapolate to ECal from SVT last SVT layer
-           //TrackState stateEcalfromLayer6 = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer6_stereo, layer6_stereoZ, ecalPosition, stepSize, bFieldMap);
+           //TrackState stateEcalfromLayer6 = TrackUtils.extrapolateTrackUsingFieldMap(stateLayer6_axial, layer6_axialZ, ecalPosition, stepSize, bFieldMap);
            TrackState stateEcalfromLayer6 = TrackUtils.extrapolateTrackUsingFieldMap(stateIP, extStartPos, ecalPosition, stepSize, bFieldMap);
            ((BaseTrackState) stateEcalfromLayer6).setLocation(TrackState.AtCalorimeter);
            track.getTrackStates().add(stateEcalfromLayer6);

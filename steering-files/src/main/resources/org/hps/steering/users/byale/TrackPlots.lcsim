@@ -8,8 +8,9 @@
         <!-- SVT plot driver -->
         <driver name="SVTTrackPlotDriver"/>
     </execute> 
-    <drivers>   
-        <driver name="SVTTrackPlotDriver" type="org.hps.users.byale.SvtTrackPlotDriver">
+    <drivers>  
+        <driver name="SVTTrackPlotDriver" type="org.hps.users.byale.MollerAnalysis">
+        <!--<driver name="SVTTrackPlotDriver" type="org.hps.users.byale.SvtTrackPlotDriver">-->
         <!--<driver name="SVTTrackPlotDriver" type="org.hps.analysis.MC.MCTrackerHitResidualAnalysisDriver">-->
         </driver>
         <driver name="AidaSaveDriver" type="org.lcsim.job.AidaSaveDriver">
