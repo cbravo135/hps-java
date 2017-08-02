@@ -6,30 +6,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+
 import org.hps.conditions.database.DatabaseConditionsManager;
 import org.hps.conditions.svt.SvtTimingConstants;
-
+import org.hps.readout.ecal.ClockSingleton;
+import org.hps.readout.ecal.ReadoutTimestamp;
+import org.hps.readout.ecal.TriggerableDriver;
+import org.hps.recon.tracking.PulseShape;
+import org.hps.util.RandomGaussian;
+import org.lcsim.detector.IReadout;
 import org.lcsim.detector.tracker.silicon.ChargeCarrier;
 import org.lcsim.detector.tracker.silicon.HpsSiSensor;
 import org.lcsim.detector.tracker.silicon.SiSensor;
-import org.lcsim.geometry.Detector;
-import org.lcsim.lcio.LCIOConstants;
 import org.lcsim.event.EventHeader;
 import org.lcsim.event.LCRelation;
 import org.lcsim.event.RawTrackerHit;
 import org.lcsim.event.SimTrackerHit;
 import org.lcsim.event.base.BaseLCRelation;
 import org.lcsim.event.base.BaseRawTrackerHit;
+import org.lcsim.geometry.Detector;
+import org.lcsim.lcio.LCIOConstants;
+import org.lcsim.recon.tracking.digitization.SimTrackerHitReadoutMap;
 import org.lcsim.recon.tracking.digitization.sisim.CDFSiSensorSim;
 import org.lcsim.recon.tracking.digitization.sisim.SiElectrodeData;
 import org.lcsim.recon.tracking.digitization.sisim.SiElectrodeDataCollection;
 import org.lcsim.recon.tracking.digitization.sisim.SiSensorSim;
-import org.lcsim.recon.tracking.digitization.sisim.config.SimTrackerHitReadoutDriver;
-import org.hps.readout.ecal.ClockSingleton;
-import org.hps.readout.ecal.ReadoutTimestamp;
-import org.hps.readout.ecal.TriggerableDriver;
-import org.hps.recon.tracking.PulseShape;
-import org.hps.util.RandomGaussian;
+import org.lcsim.recon.tracking.digitization.sisim.config.SimTrackerHitReadoutMapDriver;
 
 /**
  * SVT readout simulation.
@@ -45,7 +47,7 @@ public class SimpleSvtReadout extends TriggerableDriver {
 
     private PulseShape shape = new PulseShape.FourPole();
 
-    private SimTrackerHitReadoutDriver readoutDriver = new SimTrackerHitReadoutDriver();
+    private SimTrackerHitReadoutMapDriver readoutDriver = new SimTrackerHitReadoutMapDriver();
     private SiSensorSim siSimulation = new CDFSiSensorSim();
     private Map<SiSensor, PriorityQueue<StripHit>[]> hitMap = new HashMap<SiSensor, PriorityQueue<StripHit>[]>();
     private List<HpsSiSensor> sensors = null;
@@ -73,6 +75,8 @@ public class SimpleSvtReadout extends TriggerableDriver {
     private String relationCollection = "SVTTrueHitRelations";
 
     private int verbosity = 0;
+    
+    private Map<IReadout, List<SimTrackerHit>> readoutMap;
 
     public SimpleSvtReadout() {
         add(readoutDriver);
@@ -144,10 +148,10 @@ public class SimpleSvtReadout extends TriggerableDriver {
     @Override
     public void detectorChanged(Detector detector) {
         super.detectorChanged(detector);
-
+        
         // Get the collection of all SiSensors from the SVT 
         sensors = detector.getSubdetector(SVT_SUBDETECTOR_NAME).getDetectorElement().findDescendants(HpsSiSensor.class);
-
+        
         String[] readouts = {readout};
         readoutDriver.setCollections(readouts);
 
@@ -171,7 +175,9 @@ public class SimpleSvtReadout extends TriggerableDriver {
      */
     @Override
     public void process(EventHeader event) {
-        super.process(event);
+        super.process(event);        
+        
+        this.readoutMap = (SimTrackerHitReadoutMap) event.get(readout + "_ReadoutMap");
 
         List<StripHit> stripHits = doSiSimulation();
 
@@ -249,7 +255,7 @@ public class SimpleSvtReadout extends TriggerableDriver {
             }
         }
     }
-
+   
     /**
      *
      * @return Collection of StripHits
@@ -262,6 +268,13 @@ public class SimpleSvtReadout extends TriggerableDriver {
 
             // Set the sensor to be used in the charge deposition simulation
             siSimulation.setSensor(sensor);
+            
+            // Set the list of hits from the sensor.  --JM
+            List<SimTrackerHit> readoutHits = readoutMap.get(sensor);
+            if (readoutHits == null) {
+                readoutHits = new ArrayList<SimTrackerHit>();
+            }
+            siSimulation.setHits(readoutHits);
 
             // Perform the charge deposition simulation
             Map<ChargeCarrier, SiElectrodeDataCollection> electrodeDataMap = siSimulation.computeElectrodeData();
