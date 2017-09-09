@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hps.recon.ecal.TempOutputWriter;
+import org.hps.record.triggerbank.TriggerModule;
 import org.lcsim.event.CalorimeterHit;
 import org.lcsim.event.Cluster;
 import org.lcsim.event.EventHeader;
@@ -67,6 +69,9 @@ import org.lcsim.event.base.BaseCluster;
  * @see GTPOnlineClusterer
  */
 public class GTPClusterer extends AbstractClusterer {
+	private final TempOutputWriter writer = new TempOutputWriter("clusters_old.log");
+	private final TempOutputWriter seedWriter = new TempOutputWriter("cluster_seeds_old.log");
+	
     /**
      * The minimum energy required for a hit to be considered as a
      * cluster center. Hits with energy less than this value will be
@@ -88,6 +93,7 @@ public class GTPClusterer extends AbstractClusterer {
      * clustering.
      */
     private LinkedList<Map<Long, CalorimeterHit>> hitBuffer;
+    private LinkedList<Integer> hitNumBuffer;
     
     /**
      * Whether an asymmetric or symmetric window should be used for
@@ -128,6 +134,16 @@ public class GTPClusterer extends AbstractClusterer {
      * from which clusters should be formed.
      */
     public List<Cluster> createClusters(EventHeader event, List<CalorimeterHit> hits) {
+		StringBuffer outputBuffer = new StringBuffer();
+		outputBuffer.append("Clustering...\n");
+    	/*
+        writer.write("> Event " + event.getEventNumber() + " - ???");
+		writer.write("Input");
+		seedWriter.write("> Event " + event.getEventNumber() + " - ???");
+		seedWriter.write("Input");
+        System.out.println("Old Clusterer -- Event " + event.getEventNumber() +" -- Current Time is ???");
+        */
+        
         // Store each hit in a set by its cell ID so that it may be
         // easily acquired later.
         HashMap<Long, CalorimeterHit> hitMap = new HashMap<Long, CalorimeterHit>();
@@ -138,6 +154,31 @@ public class GTPClusterer extends AbstractClusterer {
         // Remove the last event from the hit buffer and add the new one.
         hitBuffer.removeLast();
         hitBuffer.addFirst(hitMap);
+        hitNumBuffer.removeLast();
+        hitNumBuffer.addFirst(event.getEventNumber());
+        
+        
+        for(int i = hitBuffer.size() - 1; i >= 0; i--) {
+        	Map<Long, CalorimeterHit> bufferMap = hitBuffer.get(i);
+			if(i == clusterWindow) {
+				outputBuffer.append("\tSeed Buffer " + (i + 1) + " (Event " + (event.getEventNumber() - (i * 4)) + ")\n");
+			} else {
+				outputBuffer.append("\tBuffer " + (i + 1) + " (Event " + (event.getEventNumber() - (i * 4)) + ")\n");
+			}
+        	for(CalorimeterHit hit : bufferMap.values()) {
+        		outputBuffer.append(String.format("\t\t%f;%f;%d%n", hit.getRawEnergy(), hit.getTime(), hit.getCellID()));
+        	}
+        }
+        /*
+        int index = 1;
+        for(Map<Long, CalorimeterHit> bufferMap : hitBuffer) {
+        	outputBuffer.append("\tBuffer " + index + " (Event " + (event.getEventNumber() - ((index - 1) * 4)) + ")\n");
+        	for(CalorimeterHit hit : bufferMap.values()) {
+        		outputBuffer.append(String.format("\t\t%f;%f;%d%n", hit.getRawEnergy(), hit.getTime(), hit.getCellID()));
+        	}
+        	index++;
+        }
+        */
         
         // Run the clustering algorithm on the buffer.
         List<Cluster> clusterList = getClusters();
@@ -167,6 +208,18 @@ public class GTPClusterer extends AbstractClusterer {
         }
         
         // Return the clusters.
+		if(!clusterList.isEmpty()) {
+	        writer.write(outputBuffer.toString());
+	        writer.write("Saw " + clusterList.size() + " old clusters.");
+	        for(Cluster cluster : clusterList) {
+				writer.write(String.format("%f;%f;%f;%d", cluster.getEnergy(), TriggerModule.getClusterTime(cluster), TriggerModule.getClusterHitCount(cluster),
+						TriggerModule.getClusterSeedHit(cluster).getCellID()));
+				for(CalorimeterHit hit : cluster.getCalorimeterHits()) {
+					writer.write(String.format("\t\t\t%f;%f;%d", hit.getRawEnergy(), hit.getTime(), hit.getCellID()));
+				}
+			}
+	        writer.write("\n\n");
+		}
         return clusterList;
     }
     
@@ -191,6 +244,7 @@ public class GTPClusterer extends AbstractClusterer {
         
         // Initiate the hit buffer.
         hitBuffer = new LinkedList<Map<Long, CalorimeterHit>>();
+        hitNumBuffer = new LinkedList<Integer>();
         
         // Populate the event buffer with (2 * clusterWindow + 1)
         // empty events. These empty events represent the fact that
@@ -199,6 +253,7 @@ public class GTPClusterer extends AbstractClusterer {
         int bufferSize = (2 * clusterWindow) + 1;
         for (int i = 0; i < bufferSize; i++) {
             hitBuffer.add(new HashMap<Long, CalorimeterHit>(0));
+            hitNumBuffer.add(-1);
         }
     }
     
@@ -274,177 +329,222 @@ public class GTPClusterer extends AbstractClusterer {
         writeHitCollection = state;
     }
     
-/**
- * Generates a list of clusters from the current hit buffer. The
- * "present" event is taken to be the list of hits occurring at
- * index <code>clusterWindow</code>, which is the middle of the
- * buffer.
- * @return Returns a <code>List</code> of <code>HPSEcalCluster
- * </code> objects generated from the current event.
- */
-private List<Cluster> getClusters() {
-    // Generate a list for storing clusters.
-    List<Cluster> clusters = new ArrayList<Cluster>();
-    
-    // Get the list of hits at the current time in the event buffer.
-    Map<Long, CalorimeterHit> currentHits = hitBuffer.get(clusterWindow);
-    
-    // VERBOSE :: Print the cluster window.
-    if(verbose) {
-        // Print the event header.
-        System.out.printf("%n%nEvent:%n");
+    /**
+     * Generates a list of clusters from the current hit buffer. The
+     * "present" event is taken to be the list of hits occurring at
+     * index <code>clusterWindow</code>, which is the middle of the
+     * buffer.
+     * @return Returns a <code>List</code> of <code>HPSEcalCluster
+     * </code> objects generated from the current event.
+     */
+    private List<Cluster> getClusters() {
+        // Generate a list for storing clusters.
+        List<Cluster> clusters = new ArrayList<Cluster>();
         
-        // Calculate some constants.
-        int window = (hitBuffer.size() - 1) / 2;
-        int bufferNum = 0;
+        // Get the list of hits at the current time in the event buffer.
+        Map<Long, CalorimeterHit> currentHits = hitBuffer.get(clusterWindow);
         
-        // Print out all of the hits in the event buffer.
-        for(Map<Long, CalorimeterHit> bufferMap : hitBuffer) {
-            System.out.printf("Buffer %d:%n", hitBuffer.size() - bufferNum - window - 1);
-            CalorimeterHit hit = null;
-            
-            for(Entry<Long, CalorimeterHit> entry : bufferMap.entrySet()) {
-                hit = entry.getValue();
-                System.out.printf("\t(%3d, %3d) --> %.4f (%.4f)%n", hit.getIdentifierFieldValue("ix"),
-                        hit.getIdentifierFieldValue("iy"), hit.getCorrectedEnergy(), hit.getRawEnergy());
+        System.out.println("\tSaw Hits:");
+        for(Map<Long, CalorimeterHit> hitMap : hitBuffer) {
+            for(CalorimeterHit hit : hitMap.values()) {
+                System.out.println("\t\tCalorimeter hit with energy " + hit.getRawEnergy() + " and time " + hit.getTime() + " on channel " + hit.getCellID() + ".");
             }
-            
-            bufferNum++;
         }
+		
+        /*
+		// DEBUG :: Write the converted hits seen.
+        for(Map<Long, CalorimeterHit> hitMap : hitBuffer) {
+            for(CalorimeterHit hit : hitMap.values()) {
+            	writer.write(String.format("%f;%f;%d", hit.getRawEnergy(), hit.getTime(), hit.getCellID()));
+            }
+        }
+		for(CalorimeterHit hit : currentHits.values()) {
+			seedWriter.write(String.format("%f;%f;%d", hit.getRawEnergy(), hit.getTime(), hit.getCellID()));
+		}
         
-        // If there are not hits, indicate this.
-        if(currentHits.isEmpty()) { System.out.println("\tNo hits this event!"); }
-    }
-    
-    // For a hit to be a cluster center, it must be a local maximum
-    // both with respect to its neighbors and itself both in the
-    // present time and at all times within the event buffer.
-    seedLoop:
-    for (Long currentID : currentHits.keySet()) {
-        // Get the actual hit object.
-        CalorimeterHit currentHit = currentHits.get(currentID);
+        System.out.println("\tSaw Seed Candidates:");
+        if(currentHits.isEmpty()) { System.out.println("\t\tNone!"); }
+        for(CalorimeterHit hit : currentHits.values()) {
+            System.out.println("\t\tCalorimeter hit with energy " + hit.getRawEnergy() + " and time " + hit.getTime() + " on channel " + hit.getCellID() + ".");
+        }
+        */
         
-        // VERBOSE :: Print the current cluster.
+        // VERBOSE :: Print the cluster window.
         if(verbose) {
-            System.out.printf("Cluster Check:%n");
-            System.out.printf("\t(%3d, %3d) --> %.4f%n", currentHit.getIdentifierFieldValue("ix"),
-                    currentHit.getIdentifierFieldValue("iy"), currentHit.getCorrectedEnergy());
-        }
-        
-        // Store the energy of the current hit.
-        double currentEnergy = currentHit.getCorrectedEnergy();
-        
-        // If the hit energy is lower than the minimum threshold,
-        // then we immediately reject this hit as a possible cluster.
-        if (currentEnergy < seedEnergyThreshold) {
-            // VERBOSE :: Note the reason the potential seed was
-            //            rejected.
-            if(verbose) { System.out.printf("\tREJECT :: Does not exceed seed threshold %.4f.%n", seedEnergyThreshold); }
+            // Print the event header.
+            System.out.printf("%n%nEvent:%n");
             
-            // Skip to the next potential seed.
-            continue seedLoop;
-        }
-        
-        // Store the crystals that are part of this potential cluster, 
-        // starting with the cluster seed candidate.
-        BaseCluster cluster = createBasicCluster();            
-        cluster.addHit(currentHit);
-        cluster.setPosition(currentHit.getDetectorElement().getGeometry().getPosition().v());
-        cluster.setNeedsPropertyCalculation(false);
-        
-        // Get the set of neighbors for this hit.
-        Set<Long> neighbors = neighborMap.get(currentHit.getCellID());
-        
-        // Sort through each event stored in the buffer.
-        int bufferIndex = 0;
-        for (Map<Long, CalorimeterHit> bufferHits : hitBuffer) {
-            // Get the hit energy at the current hit's position in
-            // the buffer, if it exists. Ignore the current seed candidate.
-            CalorimeterHit bufferHit = bufferHits.get(currentID);
-            if (bufferHit != null && bufferHit != currentHit) {
-                double bufferHitEnergy = bufferHit.getRawEnergy();
+            // Calculate some constants.
+            int window = (hitBuffer.size() - 1) / 2;
+            int bufferNum = 0;
+            
+            // Print out all of the hits in the event buffer.
+            for(Map<Long, CalorimeterHit> bufferMap : hitBuffer) {
+                System.out.printf("Buffer %d:%n", hitBuffer.size() - bufferNum - window - 1);
+                CalorimeterHit hit = null;
                 
-                // Check to see if the hit at this point in the buffer
-                // is larger than then original hit. If it is, we may
-                // stop the comparison because this is not a cluster.
-                if (bufferHitEnergy > currentEnergy) {
-                    // VERBOSE :: Output the reason the potential
-                    //            seed was rejected along with the
-                    //            hit that caused it.
-                    if(verbose) {
-                        System.out.printf("\tREJECT :: Buffer hit surpasses hit energy.");
-                        System.out.printf("\tBUFFER HIT :: (%3d, %3d) --> %.4f%n", bufferHit.getIdentifierFieldValue("ix"),
-                                bufferHit.getIdentifierFieldValue("iy"), bufferHit.getCorrectedEnergy(), bufferHit.getRawEnergy());
-                    }
-                    
-                    // Skip to the next potential seed.
-                    continue seedLoop;
+                for(Entry<Long, CalorimeterHit> entry : bufferMap.entrySet()) {
+                    hit = entry.getValue();
+                    System.out.printf("\t(%3d, %3d) --> %.4f (%.4f)%n", hit.getIdentifierFieldValue("ix"),
+                            hit.getIdentifierFieldValue("iy"), hit.getCorrectedEnergy(), hit.getRawEnergy());
                 }
                 
-                // If the buffer hit is smaller, then add its energy
-                // to the cluster total energy.
-                else {
-                    if(limitClusterRange && bufferIndex <= clusterWindow + 1) { cluster.addHit(bufferHit); }
-                    else if(!limitClusterRange) { cluster.addHit(bufferHit); }
-                }
+                bufferNum++;
             }
             
-            // We must also make sure that the original hit is
-            // larger than all of the neighboring hits at this
-            // point in the buffer as well.
-            for (Long neighborID : neighbors) {
-                // Get the neighbor hit energy if it exists.
-                CalorimeterHit neighborHit = bufferHits.get(neighborID);
-                if (neighborHit != null) {
-                    double neighborHitEnergy = neighborHit.getRawEnergy();
+            // If there are not hits, indicate this.
+            if(currentHits.isEmpty()) { System.out.println("\tNo hits this event!"); }
+        }
+        
+        // For a hit to be a cluster center, it must be a local maximum
+        // both with respect to its neighbors and itself both in the
+        // present time and at all times within the event buffer.
+        seedLoop:
+        for (Long currentID : currentHits.keySet()) {
+            // Get the actual hit object.
+            CalorimeterHit currentHit = currentHits.get(currentID);
+            
+            // VERBOSE :: Print the current cluster.
+            if(verbose) {
+                System.out.printf("Cluster Check:%n");
+                System.out.printf("\t(%3d, %3d) --> %.4f%n", currentHit.getIdentifierFieldValue("ix"),
+                        currentHit.getIdentifierFieldValue("iy"), currentHit.getCorrectedEnergy());
+            }
+            
+            // Store the energy of the current hit.
+            double currentEnergy = currentHit.getCorrectedEnergy();
+            
+            // If the hit energy is lower than the minimum threshold,
+            // then we immediately reject this hit as a possible cluster.
+            if (currentEnergy < seedEnergyThreshold) {
+                // VERBOSE :: Note the reason the potential seed was
+                //            rejected.
+                if(verbose) { System.out.printf("\tREJECT :: Does not exceed seed threshold %.4f.%n", seedEnergyThreshold); }
+                
+                // Skip to the next potential seed.
+                continue seedLoop;
+            }
+            
+            // Store the crystals that are part of this potential cluster, 
+            // starting with the cluster seed candidate.
+            BaseCluster cluster = createBasicCluster();            
+            cluster.addHit(currentHit);
+            cluster.setPosition(currentHit.getDetectorElement().getGeometry().getPosition().v());
+            cluster.setNeedsPropertyCalculation(false);
+            
+            // Get the set of neighbors for this hit.
+            Set<Long> neighbors = neighborMap.get(currentHit.getCellID());
+            
+            // Sort through each event stored in the buffer.
+            int bufferIndex = 0;
+            for (Map<Long, CalorimeterHit> bufferHits : hitBuffer) {
+                // Get the hit energy at the current hit's position in
+                // the buffer, if it exists. Ignore the current seed candidate.
+                CalorimeterHit bufferHit = bufferHits.get(currentID);
+                if (bufferHit != null && bufferHit != currentHit) {
+                    double bufferHitEnergy = bufferHit.getRawEnergy();
                     
-                    // Check to see if the neighbor hit at this point
-                    // in the buffer is larger than then original hit.
-                    // If it is, we may stop the comparison because this
-                    // is not a cluster.
-                    if (neighborHitEnergy > currentEnergy) {
+                    // Check to see if the hit at this point in the buffer
+                    // is larger than then original hit. If it is, we may
+                    // stop the comparison because this is not a cluster.
+                    if (bufferHitEnergy > currentEnergy) {
                         // VERBOSE :: Output the reason the potential
                         //            seed was rejected along with the
                         //            hit that caused it.
                         if(verbose) {
-                            System.out.printf("\tREJECT :: Buffer hit surpasses hit energy.%n");
-                            System.out.printf("\tBUFFER HIT :: (%3d, %3d) --> %.4f%n", neighborHit.getIdentifierFieldValue("ix"),
-                                    neighborHit.getIdentifierFieldValue("iy"), neighborHit.getCorrectedEnergy(), neighborHit.getRawEnergy());
+                            System.out.printf("\tREJECT :: Buffer hit surpasses hit energy.");
+                            System.out.printf("\tBUFFER HIT :: (%3d, %3d) --> %.4f%n", bufferHit.getIdentifierFieldValue("ix"),
+                                    bufferHit.getIdentifierFieldValue("iy"), bufferHit.getCorrectedEnergy(), bufferHit.getRawEnergy());
                         }
                         
                         // Skip to the next potential seed.
                         continue seedLoop;
                     }
                     
-                    // If the buffer neighbor hit is smaller, then
-                    // add its energy to the cluster total energy.
+                    // If the buffer hit is smaller, then add its energy
+                    // to the cluster total energy.
                     else {
-                        if(limitClusterRange && bufferIndex <= clusterWindow + 1) { cluster.addHit(neighborHit); }
-                        else if(!limitClusterRange) { cluster.addHit(neighborHit); }
+                        if(limitClusterRange && bufferIndex <= clusterWindow + 1) { cluster.addHit(bufferHit); }
+                        else if(!limitClusterRange) { cluster.addHit(bufferHit); }
                     }
                 }
+                
+                // We must also make sure that the original hit is
+                // larger than all of the neighboring hits at this
+                // point in the buffer as well.
+                for (Long neighborID : neighbors) {
+                    // Get the neighbor hit energy if it exists.
+                    CalorimeterHit neighborHit = bufferHits.get(neighborID);
+                    if (neighborHit != null) {
+                        double neighborHitEnergy = neighborHit.getRawEnergy();
+                        
+                        // Check to see if the neighbor hit at this point
+                        // in the buffer is larger than then original hit.
+                        // If it is, we may stop the comparison because this
+                        // is not a cluster.
+                        if (neighborHitEnergy > currentEnergy) {
+                            // VERBOSE :: Output the reason the potential
+                            //            seed was rejected along with the
+                            //            hit that caused it.
+                            if(verbose) {
+                                System.out.printf("\tREJECT :: Buffer hit surpasses hit energy.%n");
+                                System.out.printf("\tBUFFER HIT :: (%3d, %3d) --> %.4f%n", neighborHit.getIdentifierFieldValue("ix"),
+                                        neighborHit.getIdentifierFieldValue("iy"), neighborHit.getCorrectedEnergy(), neighborHit.getRawEnergy());
+                            }
+                            
+                            // Skip to the next potential seed.
+                            continue seedLoop;
+                        }
+                        
+                        // If the buffer neighbor hit is smaller, then
+                        // add its energy to the cluster total energy.
+                        else {
+                            if(limitClusterRange && bufferIndex <= clusterWindow + 1) { cluster.addHit(neighborHit); }
+                            else if(!limitClusterRange) { cluster.addHit(neighborHit); }
+                        }
+                    }
+                }
+                
+                // Increment the buffer index.
+                bufferIndex++;
             }
             
-            // Increment the buffer index.
-            bufferIndex++;
-        }
-        
-        // Add the cluster to the list of clusters.
-        clusters.add(cluster);
-        
-        // VERBOSE :: Output the clusters generated from this event.
-        if(verbose) {
-            System.out.printf("Cluster added.%n");
-            System.out.printf("\t(%3d, %3d) --> %.4f GeV --> %d hits%n", cluster.getCalorimeterHits().get(0).getIdentifierFieldValue("ix"),
-                    cluster.getCalorimeterHits().get(0).getIdentifierFieldValue("iy"), cluster.getEnergy(), cluster.getCalorimeterHits().size());
-            for(CalorimeterHit hit : cluster.getCalorimeterHits()) {
-                System.out.printf("\t\tCLUSTER HIT :: (%3d, %3d) --> %.4f%n", hit.getIdentifierFieldValue("ix"),
-                        hit.getIdentifierFieldValue("iy"), hit.getCorrectedEnergy(), hit.getRawEnergy());
+            // Add the cluster to the list of clusters.
+            clusters.add(cluster);
+            
+            // VERBOSE :: Output the clusters generated from this event.
+            if(verbose) {
+                System.out.printf("Cluster added.%n");
+                System.out.printf("\t(%3d, %3d) --> %.4f GeV --> %d hits%n", cluster.getCalorimeterHits().get(0).getIdentifierFieldValue("ix"),
+                        cluster.getCalorimeterHits().get(0).getIdentifierFieldValue("iy"), cluster.getEnergy(), cluster.getCalorimeterHits().size());
+                for(CalorimeterHit hit : cluster.getCalorimeterHits()) {
+                    System.out.printf("\t\tCLUSTER HIT :: (%3d, %3d) --> %.4f%n", hit.getIdentifierFieldValue("ix"),
+                            hit.getIdentifierFieldValue("iy"), hit.getCorrectedEnergy(), hit.getRawEnergy());
+                }
             }
         }
+        
+        // DEBUG :: Output the generated clusters.
+        System.out.println("\tClusters:");
+        if(clusters.isEmpty()) { System.out.println("\t\tNone!"); }
+        for(Cluster cluster : clusters) {
+            System.out.println("\t\tSaw cluster with energy " + cluster.getEnergy() + " at time " + TriggerModule.getClusterTime(cluster) + " with "
+                    + TriggerModule.getClusterHitCount(cluster) + " on channel " + TriggerModule.getClusterSeedHit(cluster).getCellID() + ".");
+        }
+		
+		// DEBUG :: Write the converted hits seen.
+		//writer.write("Output");
+		//for(Cluster cluster : clusters) {
+		//	writer.write(String.format("%f;%f;%f;%d", cluster.getEnergy(), TriggerModule.getClusterTime(cluster), TriggerModule.getClusterHitCount(cluster),
+		//			TriggerModule.getClusterSeedHit(cluster).getCellID()));
+		//}
+        
+        // Return the generated list of clusters.
+        return clusters;
     }
     
-    // Return the generated list of clusters.
-    return clusters;
-}
+    void tempCloseWriter() {
+    	writer.close();
+    	seedWriter.close();
+    }
 }
