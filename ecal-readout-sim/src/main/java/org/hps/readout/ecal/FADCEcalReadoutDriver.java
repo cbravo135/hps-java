@@ -19,6 +19,8 @@ import java.util.Set;
 import org.hps.conditions.database.DatabaseConditionsManager;
 import org.hps.conditions.ecal.EcalChannelConstants;
 import org.hps.conditions.ecal.EcalConditions;
+import org.hps.readout.ecal.updated.ReadoutDataManager;
+import org.hps.readout.ecal.updated.TempOutputWriter;
 import org.hps.recon.ecal.EcalUtils;
 import org.hps.util.RandomGaussian;
 import org.lcsim.event.CalorimeterHit;
@@ -40,7 +42,7 @@ import org.lcsim.lcio.LCIOConstants;
  * @version $Id: FADCEcalReadoutDriver.java,v 1.4 2013/10/31 00:11:02 meeg Exp $
  */
 public class FADCEcalReadoutDriver extends EcalReadoutDriver<RawCalorimeterHit> {
-
+	private final TempOutputWriter writer = new TempOutputWriter("raw_hits_old.log");
     // Repeated here from EventConstants in evio module to avoid depending on it.
     private static final int ECAL_RAW_MODE = 1;
     private static final int ECAL_PULSE_MODE = 2;
@@ -334,7 +336,12 @@ public class FADCEcalReadoutDriver extends EcalReadoutDriver<RawCalorimeterHit> 
      */
     @Override
     protected void readHits(List<RawCalorimeterHit> hits) {
-
+    	/*
+    	System.out.println("==========================================================================================");
+    	System.out.println("==== Method readHits(List<CalorimeterHit>) in Class FADCEcalReadoutDriver ================");
+    	System.out.println();
+    	*/
+    	
         for (Long cellID : analogPipelines.keySet()) {
             RingBuffer signalBuffer = analogPipelines.get(cellID);
 
@@ -413,7 +420,17 @@ public class FADCEcalReadoutDriver extends EcalReadoutDriver<RawCalorimeterHit> 
         }
 
         hits.addAll(triggerPathCoincidenceQueue);
+		// DEBUG :: Write the truth hits seen.
+		writer.write("Output");
+		for(RawCalorimeterHit hit : hits) {
+			writer.write(String.format("%d;%d;%d", hit.getAmplitude(), hit.getTimeStamp(), hit.getCellID()));
+		}
     }
+    
+    @Override
+	public void endOfData() {
+		writer.close();
+	}
 
     @Override
     public void startOfData() {
@@ -450,8 +467,10 @@ public class FADCEcalReadoutDriver extends EcalReadoutDriver<RawCalorimeterHit> 
     @Override
     public double readoutDeltaT() {
         double triggerTime = ClockSingleton.getTime() + triggerDelay;
-        int cycle = (int) Math.floor((triggerTime - readoutOffset + ClockSingleton.getStepSize()) / readoutPeriod);
-        double readoutTime = (cycle - readoutLatency) * readoutPeriod + readoutOffset - ClockSingleton.getStepSize();
+        //int cycle = (int) Math.floor((triggerTime - readoutOffset + ClockSingleton.getStepSize()) / readoutPeriod);
+        //double readoutTime = (cycle - readoutLatency) * readoutPeriod + readoutOffset - ClockSingleton.getStepSize();
+        int cycle = (int) Math.floor((triggerTime + ClockSingleton.getStepSize()) / readoutPeriod);
+        double readoutTime = (cycle - readoutLatency) * readoutPeriod - ClockSingleton.getStepSize();
         return readoutTime;
     }
 
@@ -565,10 +584,18 @@ public class FADCEcalReadoutDriver extends EcalReadoutDriver<RawCalorimeterHit> 
      */
     @Override
     protected void putHits(List<CalorimeterHit> hits) {
+		// DEBUG :: Write the truth hits seen.
+    	writer.write(">" + ReadoutDataManager.getCurrentTime());
+		writer.write("Input");
+		for(CalorimeterHit hit : hits) {
+			writer.write(String.format("%f;%f;%d", hit.getRawEnergy(), hit.getTime(), hit.getCellID()));
+		}
+    	
         //fill the readout buffers
         for (CalorimeterHit hit : hits) {
             RingBuffer eDepBuffer = analogPipelines.get(hit.getCellID());
             double energyAmplitude = hit.getRawEnergy();
+        	//System.out.println("\tProcessing calorimeter hit at channel " + hit.getCellID() + " and truth energy " + energyAmplitude + " GeV.");
             // Get the channel data.
             EcalChannelConstants channelData = findChannel(hit.getCellID());
             if (addNoise) {
@@ -582,15 +609,22 @@ public class FADCEcalReadoutDriver extends EcalReadoutDriver<RawCalorimeterHit> 
                             + hit.getRawEnergy() * EcalUtils.MeV / pePerMeV);
                 }
                 energyAmplitude += RandomGaussian.getGaussian(0, noise);
+                //System.out.println("\t\tAdded noise of " + (energyAmplitude - hit.getRawEnergy()) + " for new total energy of " + energyAmplitude + ".");
             }
             if ((1) * readoutPeriod + readoutTime() - (ClockSingleton.getTime() + hit.getTime()) >= readoutPeriod) {
                 throw new RuntimeException("trying to add a hit to the analog pipeline, but time seems incorrect");
             }
+			//System.out.println("\t\tConverted energy deposition to pulse and added to channel.");
+			//System.out.print("\t\t\t");
             for (int i = 0; i < bufferLength; i++) {
 //             eDepBuffer.addToCell(i, energyAmplitude * pulseAmplitude((i + 1) * readoutPeriod + readoutTime() - (ClockSingleton.getTime() + hit.getTime()), hit.getCellID()));
                eDepBuffer.addToCell(i, energyAmplitude * pulseAmplitude((i + 1) * readoutPeriod + readoutTime() - (ClockSingleton.getTime() + hit.getTime()) - findChannel(hit.getCellID()).getTimeShift().getTimeShift(), hit.getCellID ()));
-            
-            }
+               
+               double debugPulseAmp = pulseAmplitude((i + 1) * readoutPeriod + readoutTime()
+               			- (ClockSingleton.getTime() + hit.getTime()) - findChannel(hit.getCellID()).getTimeShift().getTimeShift(), hit.getCellID());
+				//System.out.print("[" + debugPulseAmp + "]   ");
+			}
+			//System.out.println();
         }
     }
 
