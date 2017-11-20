@@ -334,7 +334,7 @@ public final class ClusterUtilities {
      * Apply HPS-specific energy and position corrections to a list of clusters in place.
      * @param clusters The list of clusters.
      */
-    public static void applyCorrections(HPSEcal3 ecal, List<Cluster> clusters, boolean isMC) {
+    public static void applyCorrections(HPSEcal3 ecal, List<Cluster> clusters, boolean isMC, double bField) {
                 
         // Loop over the clusters.
         for (Cluster cluster : clusters) {
@@ -347,7 +347,7 @@ public final class ClusterUtilities {
                 ClusterPositionCorrection.setCorrectedPosition(baseCluster);
             
                 // Apply PID based energy correction.
-                ClusterEnergyCorrection.setCorrectedEnergy(ecal, baseCluster, isMC);
+                ClusterEnergyCorrection.setCorrectedEnergy(ecal, baseCluster, isMC, bField);
             }
         }
     }
@@ -356,7 +356,7 @@ public final class ClusterUtilities {
      * Apply HPS-specific energy and position corrections to a cluster without track information.
      * @param cluster The input cluster.
      */
-    public static void applyCorrections(HPSEcal3 ecal, Cluster cluster, boolean isMC) {
+    public static void applyCorrections(HPSEcal3 ecal, Cluster cluster, boolean isMC, double bField) {
                             
         if (cluster instanceof BaseCluster) {
             
@@ -366,7 +366,7 @@ public final class ClusterUtilities {
             ClusterPositionCorrection.setCorrectedPosition(baseCluster);
             
             // Apply PID based energy correction.
-            ClusterEnergyCorrection.setCorrectedEnergy(ecal, baseCluster, isMC);
+            ClusterEnergyCorrection.setCorrectedEnergy(ecal, baseCluster, isMC, bField);
         }        
     }   
     
@@ -374,7 +374,7 @@ public final class ClusterUtilities {
      * Apply HPS-specific energy and position corrections to a cluster with track information.
      * @param cluster The input cluster.
      */
-    public static void applyCorrections(HPSEcal3 ecal, Cluster cluster, double ypos, boolean isMC) {
+    public static void applyCorrections(HPSEcal3 ecal, Cluster cluster, double ypos, boolean isMC, double bField) {
         
         if (cluster instanceof BaseCluster) {
             
@@ -384,7 +384,7 @@ public final class ClusterUtilities {
             ClusterPositionCorrection.setCorrectedPosition(baseCluster);
             
             // Apply PID based energy correction.
-            ClusterEnergyCorrection.setCorrectedEnergy(ecal, baseCluster, ypos, isMC);
+            ClusterEnergyCorrection.setCorrectedEnergy(ecal, baseCluster, ypos, isMC, bField);
         }        
     }    
         

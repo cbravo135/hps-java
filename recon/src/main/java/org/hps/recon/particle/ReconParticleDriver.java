@@ -390,7 +390,7 @@ public abstract class ReconParticleDriver extends Driver {
      *         generated from the argument data.
      */
     protected List<ReconstructedParticle> makeReconstructedParticles(List<Cluster> clusters,
-            List<List<Track>> trackCollections) {
+            List<List<Track>> trackCollections, double bField) {
 
         // Create a list in which to store reconstructed particles.
         List<ReconstructedParticle> particles = new ArrayList<ReconstructedParticle>();
@@ -452,7 +452,7 @@ public abstract class ReconParticleDriver extends Driver {
                     if(useCorrectedClusterPositionsForMatching){
                         cluster = new BaseCluster(cluster);
                         double ypos = TrackUtils.getTrackStateAtECal(particle.getTracks().get(0)).getReferencePoint()[2];
-                        ClusterUtilities.applyCorrections(ecal, cluster, ypos,isMC);
+                        ClusterUtilities.applyCorrections(ecal, cluster, ypos,isMC, bField);
                     }
                     
                     // normalized distance between this cluster and track:
@@ -532,9 +532,9 @@ public abstract class ReconParticleDriver extends Driver {
                 if (clusterToTrack.containsKey(cluster)) {
                     Track matchedT = clusterToTrack.get(cluster);
                     double ypos = TrackUtils.getTrackStateAtECal(matchedT).getReferencePoint()[2];
-                    ClusterUtilities.applyCorrections(ecal, cluster, ypos, isMC);
+                    ClusterUtilities.applyCorrections(ecal, cluster, ypos, isMC, bField);
                 } else {
-                    ClusterUtilities.applyCorrections(ecal, cluster, isMC);
+                    ClusterUtilities.applyCorrections(ecal, cluster, isMC, bField);
                 }
             }
         }
@@ -643,7 +643,7 @@ public abstract class ReconParticleDriver extends Driver {
 
         // Loop through all of the track collections present in the event and
         // create final state particles.
-        finalStateParticles.addAll(makeReconstructedParticles(clusters, trackCollections));
+        finalStateParticles.addAll(makeReconstructedParticles(clusters, trackCollections, bField));
 
         // VERBOSE :: Output the number of reconstructed particles.
         printDebug("Final State Particles :: " + finalStateParticles.size());

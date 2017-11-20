@@ -71,10 +71,10 @@ public final class ClusterEnergyCorrection {
      * @param cluster The input cluster.
      * @return The corrected energy.
      */
-    public static double calculateCorrectedEnergy(HPSEcal3 ecal, Cluster cluster, boolean isMC) {
+    public static double calculateCorrectedEnergy(HPSEcal3 ecal, Cluster cluster, boolean isMC, double bField) {
         double rawE = cluster.getEnergy();
         return computeCorrectedEnergy(ecal, cluster.getParticleId(), rawE, cluster.getPosition()[0],
-                cluster.getPosition()[1], isMC);
+                cluster.getPosition()[1], isMC, bField);
     }
 
     /**
@@ -83,9 +83,9 @@ public final class ClusterEnergyCorrection {
      * @param cluster The input cluster.
      * @return The corrected energy.
      */
-    public static double calculateCorrectedEnergy(HPSEcal3 ecal, Cluster cluster, double ypos, boolean isMC) {
+    public static double calculateCorrectedEnergy(HPSEcal3 ecal, Cluster cluster, double ypos, boolean isMC, double bField) {
         double rawE = cluster.getEnergy();
-        return computeCorrectedEnergy(ecal, cluster.getParticleId(), rawE, cluster.getPosition()[0], ypos, isMC);
+        return computeCorrectedEnergy(ecal, cluster.getParticleId(), rawE, cluster.getPosition()[0], ypos, isMC, bField);
     }
 
     /**
@@ -93,8 +93,8 @@ public final class ClusterEnergyCorrection {
      * 
      * @param cluster The input cluster.
      */
-    public static void setCorrectedEnergy(HPSEcal3 ecal, BaseCluster cluster, boolean isMC) {
-        double correctedEnergy = calculateCorrectedEnergy(ecal, cluster, isMC);
+    public static void setCorrectedEnergy(HPSEcal3 ecal, BaseCluster cluster, boolean isMC, double bField) {
+        double correctedEnergy = calculateCorrectedEnergy(ecal, cluster, isMC, bField);
         if (isMC) {
             correctedEnergy += calcNoise(correctedEnergy);
         }
@@ -107,8 +107,8 @@ public final class ClusterEnergyCorrection {
      * @param cluster The input cluster.
      */
 
-    public static void setCorrectedEnergy(HPSEcal3 ecal, BaseCluster cluster, double ypos, boolean isMC) {
-        double correctedEnergy = calculateCorrectedEnergy(ecal, cluster, ypos, isMC);
+    public static void setCorrectedEnergy(HPSEcal3 ecal, BaseCluster cluster, double ypos, boolean isMC, double bField) {
+        double correctedEnergy = calculateCorrectedEnergy(ecal, cluster, ypos, isMC, bField);
         if (isMC) {
             correctedEnergy += calcNoise(correctedEnergy);
         }
@@ -125,7 +125,7 @@ public final class ClusterEnergyCorrection {
      */
 
     private static double computeCorrectedEnergy(HPSEcal3 ecal, int pdg, double rawEnergy, double xpos, double ypos,
-            boolean isMC) {
+            boolean isMC, double bField) {
         // distance to beam gap edge
         double r;
         // Get these values from the Ecal geometry:
@@ -194,13 +194,13 @@ public final class ClusterEnergyCorrection {
             switch (pdg) {
                 case 11:
                     // electron
-                    return computeCorrectedEnergy(r, rawEnergy, par0MC_em, par1MC_em, par2MC_em);
+                    return computeCorrectedEnergy(r, rawEnergy, par0MC_em, par1MC_em, par2MC_em, bField);
                 case -11:
                     // positron
-                    return computeCorrectedEnergy(r, rawEnergy, par0MC_ep, par1MC_ep, par2MC_ep);
+                    return computeCorrectedEnergy(r, rawEnergy, par0MC_ep, par1MC_ep, par2MC_ep, bField);
                 case 22:
                     // photon
-                    return computeCorrectedEnergy(r, rawEnergy, par0MC_p, par1MC_p, par2MC_p);
+                    return computeCorrectedEnergy(r, rawEnergy, par0MC_p, par1MC_p, par2MC_p, bField);
                 default:
                     // unknown
                     return rawEnergy;
@@ -209,13 +209,13 @@ public final class ClusterEnergyCorrection {
             switch (pdg) {
                 case 11:
                     // electron
-                    return computeCorrectedEnergy(r, rawEnergy, par0_em, par1_em, par2_em);
+                    return computeCorrectedEnergy(r, rawEnergy, par0_em, par1_em, par2_em, bField);
                 case -11:
                     // positron
-                    return computeCorrectedEnergy(r, rawEnergy, par0_ep, par1_ep, par2_ep);
+                    return computeCorrectedEnergy(r, rawEnergy, par0_ep, par1_ep, par2_ep, bField);
                 case 22:
                     // photon
-                    return computeCorrectedEnergy(r, rawEnergy, par0_p, par1_p, par2_p);
+                    return computeCorrectedEnergy(r, rawEnergy, par0_p, par1_p, par2_p, bField);
                 default:
                     // unknown
                     return rawEnergy;
@@ -223,6 +223,7 @@ public final class ClusterEnergyCorrection {
         }
     }
 
+    final static double bFieldRef = -0.2400038071488;
     /**
      * Calculates the energy correction to a cluster given the variables from the fit as per <a href=
      * "https://misportal.jlab.org/mis/physics/hps_notes/index.cfm?note_year=2014" >HPS Note 2014-001</a> Note that this
@@ -232,11 +233,22 @@ public final class ClusterEnergyCorrection {
      * @param A,B,C from fitting in note
      * @return Corrected Energy
      */
-    private static double computeCorrectedEnergy(double y, double rawEnergy, double varA, double varB[], double varC[]) {
+    private static double computeCorrectedEnergy(double y, double rawEnergy, double varA, double varB[], double varC[], double bField) {
         int ii = y < varB[0] ? 2 : 5;
+        
+        double A = varA;
+        double B = (varB[1] - varB[ii] * Math.exp(-(y - varB[ii + 1]) * varB[ii + 2]));
+        double C = (varC[1] - varC[ii] * Math.exp(-(y - varC[ii + 1]) * varC[ii + 2]));
+        
+        // values of A and B were determined using the magnetic field of .24 T for a 1.056 GeV beam:
+        // If a different magnetic field was used, scale up A and B, accordingly:
+        // 2.306 GeV -->  -0.5233233758528999 T
+        // 1.056 GeV -->  -0.2400038071488 T
+        A*=bField/bFieldRef;
+        B*=Math.sqrt(bField/bFieldRef);
+        
         double corrEnergy = rawEnergy
-                / (varA / rawEnergy + (varB[1] - varB[ii] * Math.exp(-(y - varB[ii + 1]) * varB[ii + 2]))
-                        / (Math.sqrt(rawEnergy)) + (varC[1] - varC[ii] * Math.exp(-(y - varC[ii + 1]) * varC[ii + 2])));
+                / (A / rawEnergy + B / (Math.sqrt(rawEnergy)) + C);
         return corrEnergy;
     }
 }
