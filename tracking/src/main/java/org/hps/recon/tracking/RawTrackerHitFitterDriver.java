@@ -2,6 +2,9 @@ package org.hps.recon.tracking;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.hps.conditions.database.DatabaseConditionsManager;
 import org.hps.conditions.svt.SvtTimingConstants;
 import org.hps.readout.ecal.ReadoutTimestamp;
@@ -37,7 +40,16 @@ public class RawTrackerHitFitterDriver extends Driver {
     private boolean subtractTOF = false;
     private boolean subtractTriggerTime = false;
     private boolean correctChanT0 = true;
+    private int     maxSvtHits = 2500;
 
+    
+    /**
+     * Setup logging for this class.
+     */
+    private static Logger LOGGER = Logger.getLogger(RawTrackerHitFitterDriver.class.getPackage().getName());
+
+
+    
     /**
      * Report time relative to the nearest expected truth event time.
      *
@@ -47,6 +59,14 @@ public class RawTrackerHitFitterDriver extends Driver {
         this.useTruthTime = useTruthTime;
     }
 
+    /**
+     * Set the maximum hits in SVT for the event. If more, then abort event.
+     * @param max
+     */
+    public void setMaxSvtHits(int max){
+        this.maxSvtHits = max;
+    }
+    
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
@@ -138,6 +158,12 @@ public class RawTrackerHitFitterDriver extends Driver {
         List<ShapeFitParameters> fits = new ArrayList<ShapeFitParameters>();
 
         // Make a fitted hit from this cluster
+        if(rawHits.size()>this.maxSvtHits){
+            LOGGER.log(Level.WARNING,"TOO MANY RAW HITS ====== SKIPPING EVENT! Nhits= {0}",rawHits.size());
+            throw new Driver.NextEventException();            
+        }
+        
+        System.out.format("RawTrackerHitFitterDriver::process() - Rawhits: %3d - ",rawHits.size());
         for (RawTrackerHit hit : rawHits) {
             int strip = hit.getIdentifierFieldValue("strip");
             HpsSiSensor sensor = (HpsSiSensor) hit.getDetectorElement();
@@ -186,6 +212,7 @@ public class RawTrackerHitFitterDriver extends Driver {
                 hit.getDetectorElement().getReadout().addHit(hth);
             }
         }
+        System.out.format(" hits: %3d \n",hits.size());
         event.put(fitCollectionName, fits, ShapeFitParameters.class, genericObjectFlags);
         event.put(fittedHitCollectionName, hits, FittedRawTrackerHit.class, relationFlags);
     }
