@@ -37,7 +37,17 @@ public class RawTrackerHitFitterDriver extends Driver {
     private boolean subtractTOF = false;
     private boolean subtractTriggerTime = false;
     private boolean correctChanT0 = true;
-
+    private int maxRawHits = 400;
+    
+    /**
+     * Set the maximum number of raw hits
+     * 
+     * @param maximum number of raw hits (a zero or negative value disables the cut)
+     */
+    public void setMaxRawHits(int maxRawHits){
+        this.maxRawHits = maxRawHits;
+    }
+    
     /**
      * Report time relative to the nearest expected truth event time.
      *
@@ -134,9 +144,16 @@ public class RawTrackerHitFitterDriver extends Driver {
         if (rawHits == null) {
             throw new RuntimeException("Event is missing SVT hits collection!");
         }
+        
+            
         List<FittedRawTrackerHit> hits = new ArrayList<FittedRawTrackerHit>();
         List<ShapeFitParameters> fits = new ArrayList<ShapeFitParameters>();
-
+        if(rawHits.size() > this.maxRawHits && this.maxRawHits > 0){
+            //add empty collections to avoid potential problems downstream.  
+            event.put(fitCollectionName, fits, ShapeFitParameters.class, genericObjectFlags);
+            event.put(fittedHitCollectionName, hits, FittedRawTrackerHit.class, relationFlags);
+            return;
+        }
         // Make a fitted hit from this cluster
         for (RawTrackerHit hit : rawHits) {
             int strip = hit.getIdentifierFieldValue("strip");
