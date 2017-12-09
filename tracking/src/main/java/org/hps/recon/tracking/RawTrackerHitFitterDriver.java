@@ -40,7 +40,7 @@ public class RawTrackerHitFitterDriver extends Driver {
     private boolean subtractTOF = false;
     private boolean subtractTriggerTime = false;
     private boolean correctChanT0 = true;
-    private int     maxSvtHits = 2500;
+    private int     maxSvtHits = 2000;
 
     
     /**
@@ -159,11 +159,11 @@ public class RawTrackerHitFitterDriver extends Driver {
 
         // Make a fitted hit from this cluster
         if(rawHits.size()>this.maxSvtHits){
-            LOGGER.log(Level.WARNING,"TOO MANY RAW HITS ====== SKIPPING EVENT! Nhits= {0}",rawHits.size());
+            String message = String.format("TOO MANY RAW HITS ====== SKIPPING EVENT %d! Nhits= %d",event.getEventNumber(),rawHits.size());
+            LOGGER.log(Level.WARNING,message);
             throw new Driver.NextEventException();            
         }
         
-        System.out.format("RawTrackerHitFitterDriver::process() - Rawhits: %3d - ",rawHits.size());
         for (RawTrackerHit hit : rawHits) {
             int strip = hit.getIdentifierFieldValue("strip");
             HpsSiSensor sensor = (HpsSiSensor) hit.getDetectorElement();
@@ -212,7 +212,6 @@ public class RawTrackerHitFitterDriver extends Driver {
                 hit.getDetectorElement().getReadout().addHit(hth);
             }
         }
-        System.out.format(" hits: %3d \n",hits.size());
         event.put(fitCollectionName, fits, ShapeFitParameters.class, genericObjectFlags);
         event.put(fittedHitCollectionName, hits, FittedRawTrackerHit.class, relationFlags);
     }
