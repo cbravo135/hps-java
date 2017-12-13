@@ -9,7 +9,7 @@ import org.hps.conditions.database.Table;
  * Condition mapping SVT channels to their calculated hit efficiency.
  */
 @Table(names = {"svt_hit_efficiencies"})
-class SvtHitEfficiency extends BaseConditionsObject {
+public class SvtHitEfficiency extends BaseConditionsObject {
 
     @SuppressWarnings("serial")
     public static class SvtHitEfficiencyCollection extends BaseConditionsObjectCollection<SvtGain> {
@@ -24,5 +24,4 @@ class SvtHitEfficiency extends BaseConditionsObject {
     public Double getEfficiency() {
         return this.getFieldValue(Double.class, "efficiency");
     }
-
 }
