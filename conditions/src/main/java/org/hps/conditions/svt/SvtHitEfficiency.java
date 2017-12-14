@@ -15,7 +15,7 @@ import org.hps.conditions.database.MultipleCollectionsAction;
 public class SvtHitEfficiency extends BaseConditionsObject {
 
     @SuppressWarnings("serial")
-    public static class SvtHitEfficiencyCollection extends BaseConditionsObjectCollection<SvtGain> {
+    public static class SvtHitEfficiencyCollection extends BaseConditionsObjectCollection<SvtHitEfficiency> {
     }
 
     @Field(names = {"svt_channel_id"})
