@@ -6,28 +6,19 @@
       @author Matt Graham <mgraham@slac.stanford.edu>
     -->    
     <execute>    
-        <driver name="ConditionsDriver"/>
-        <driver name="EventMarkerDriver" />
         <!--  Readout Simulation -->
         <driver name="EcalReadout"/>
         <driver name="EcalConverter"/>
         <driver name="EcalClustererGTP"/>
         <driver name="PairTrigger1"/>
         <driver name="SimpleSVTReadout" />
+        <driver name="InactiveSiHitReadout" />
         <driver name="TestRunReconToLcio"/>     
         <driver name="AidaSaveDriver"/>    
         <driver name="ClockDriver"/>     
         <driver name="CleanupDriver" /> 
     </execute>
     <drivers>
-        <driver name="EventMarkerDriver" type="org.lcsim.job.EventMarkerDriver">
-            <eventInterval>1000</eventInterval>
-        </driver>
-        <driver name="ConditionsDriver" type="org.hps.conditions.ConditionsDriver">
-            <detectorName>${detector}</detectorName>
-            <runNumber>${run}</runNumber>
-            <freeze>true</freeze>
-        </driver>
         <driver name="EcalReadout" type="org.hps.readout.ecal.FADCEcalReadoutDriver">
             <coincidenceWindow>1</coincidenceWindow>
             <ecalName>Ecal</ecalName>
@@ -82,7 +73,7 @@
             <energySlopeLow>0.600</energySlopeLow>
             <prescale>1</prescale>
             <outputFileName>${outputFile}.triggers.pairs1</outputFileName>
-            <!--<verbose>true</verbose>-->
+            <verbose>true</verbose>
         </driver>         
         <driver name="SimpleSVTReadout" type="org.hps.readout.svt.SimpleSvtReadout">
             <enablePileupCut>false</enablePileupCut>
@@ -101,5 +92,6 @@
             <writeSvtData>true</writeSvtData>
             <ecalMode>1</ecalMode>
         </driver>
+        <driver name="InactiveSiHitReadout" type="org.hps.readout.ecal.InactiveSiHitReadout" />
     </drivers>
 </lcsim>
