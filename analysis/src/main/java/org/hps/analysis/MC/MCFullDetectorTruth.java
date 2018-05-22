@@ -72,7 +72,10 @@ public class MCFullDetectorTruth{
     private void doTruth(EventHeader event, Track trk, FieldMap bFieldMap, List<HpsSiSensor> sensors, Subdetector trackerSubdet){
     
         List<SimTrackerHit> trackerHits = event.get(SimTrackerHit.class, trackerHitsCollectionName);
-        List<SimTrackerHit> trackerHits_Inactive = event.get(SimTrackerHit.class, inactiveTrackerHitsCollectionName);
+        List<SimTrackerHit> trackerHits_Inactive = null;
+        if(event.hasCollection(SimTrackerHit.class , inactiveTrackerHitsCollectionName)){
+            trackerHits_Inactive = event.get(SimTrackerHit.class, inactiveTrackerHitsCollectionName);
+        }
         Map<MCParticle, List<SimTrackerHit>> trackerHitMap = BuildTrackerHitMap(trackerHits);
         Map<MCParticle, List<SimTrackerHit>> trackerInHitMap = BuildTrackerHitMap(trackerHits_Inactive);
         
@@ -267,6 +270,7 @@ public class MCFullDetectorTruth{
     
     public static Map<MCParticle, List<SimTrackerHit>> BuildTrackerHitMap(List<SimTrackerHit> trackerHits){
         Map<MCParticle, List<SimTrackerHit>> trackerHitMap = new HashMap<MCParticle, List<SimTrackerHit>>();
+        if(trackerHits == null) { return trackerHitMap; }
         for (SimTrackerHit hit : trackerHits) {
             MCParticle p = hit.getMCParticle();
             if (p == null) {
